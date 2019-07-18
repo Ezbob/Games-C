@@ -1,5 +1,5 @@
 
-#include "sdl2/SDL.h"
+#include "SDL.h"
 #include "Gameclock.h"
 #include <string.h>
 
