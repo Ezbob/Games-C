@@ -131,7 +131,7 @@ void sdlDestroy() {
     SDL_DestroyWindow(g_window);
 }
 
-void handleEvent(const SDL_Event *event) {
+void boardstate_handleEvent(const SDL_Event *event) {
     Uint32 mouseState;
     switch(event->type) {
         case SDL_QUIT:
@@ -152,7 +152,7 @@ void handleEvent(const SDL_Event *event) {
     }
 }
 
-void handleKeyState(const Uint8 *states) {
+void boardstate_handleKeyState(const Uint8 *states) {
     if (states[SDL_SCANCODE_ESCAPE])
         g_is_playing = SDL_FALSE;
 }
@@ -376,12 +376,12 @@ void boardstate_render() {
     SDL_RenderPresent(g_renderer);
 }
 
-void pumpEvents() {
+void pumpEvents(struct gt_Gamestate *state) {
     static SDL_Event inputEvent;
     while ( SDL_PollEvent(&inputEvent) != 0 ) {
-        handleEvent(&inputEvent);
+        state->handleEvent(&inputEvent);
     }
-    handleKeyState(SDL_GetKeyboardState(NULL));
+    state->handleKeyState(SDL_GetKeyboardState(NULL));
 }
 
 void initCells(struct Cell *cs, int length) {
@@ -391,24 +391,24 @@ void initCells(struct Cell *cs, int length) {
     }
 }
 
+struct gt_Gamestate g_boardgamestate = {
+    .load = boardstate_load,
+    .update = boardstate_update,
+    .render = boardstate_render,
+    .handleEvent = boardstate_handleEvent,
+    .handleKeyState = boardstate_handleKeyState
+};
+
+struct gt_Gamestate *gt_gamestates[2] = {
+    &g_boardgamestate,
+    GT_STATE_ARRAY_END
+};
+
 void initGlobalData() {
     initCells(g_cellboard, BOARD_LENGTH * BOARD_LENGTH);
     gt_gameclock_init(&g_gameclock, MS_PER_UPDATE);
-    gt_gsmachine_init(&g_statemachine);
+    gt_gsmachine_init(&g_statemachine, gt_gamestates);
 }
-
-struct gt_Gamestate g_boardgamestate = {
-    .stopped = 0,
-    .update = boardstate_update,
-    .render = boardstate_render,
-    .load = boardstate_load
-};
-
-GT_GAME_STATE_ARRAY = {
-    &g_boardgamestate,
-    GT_END_OF_STATE_ARRAY
-};
-
 
 int MAIN_NAME(int argc, char *argv[])
 {
@@ -429,11 +429,12 @@ int MAIN_NAME(int argc, char *argv[])
     }
 
     if ( !state->load() ) {
+        perror("Could not initialize state");
         goto initialized_failure;
     }
 
     while ( g_is_playing ) {
-        pumpEvents();
+        pumpEvents(state);
 
         while ( GT_CLOCK_SHOULD_UPDATE(g_gameclock) ) {
             state->update();

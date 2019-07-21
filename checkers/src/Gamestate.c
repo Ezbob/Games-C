@@ -12,8 +12,8 @@ struct gt_Gamestate *gt_gsmachine_advanceState(struct gt_Gamestate_Machine *mach
     return machine->states[machine->current_state_index++];
 }
 
-SDL_bool gt_gsmachine_init(struct gt_Gamestate_Machine *machine) {
+SDL_bool gt_gsmachine_init(struct gt_Gamestate_Machine *machine, struct gt_Gamestate **states) {
     machine->current_state_index = 0;
-    machine->states = GT_GAMESTATES;
+    machine->states = states;
     return SDL_TRUE;
 }
