@@ -26,15 +26,17 @@ struct gt_Gamestate_Machine {
     Sentry state (the null state) defined here to give it
     a static address 
 */
-static struct gt_Gamestate GT_ENDSTATE = ((struct gt_Gamestate){
+static struct gt_Gamestate GT_ENDSTATE = (struct gt_Gamestate) {
     .stopped = SDL_TRUE
-}); 
+}; 
 
 /* Game Machine function api */
 
 SDL_bool gt_gsmachine_hasNextState(struct gt_Gamestate_Machine *);
 struct gt_Gamestate *gt_gsmachine_advanceState(struct gt_Gamestate_Machine *);
 SDL_bool gt_gsmachine_init(struct gt_Gamestate_Machine *, struct gt_Gamestate **);
+int gt_gsmachine_getCurrentStateIndex(struct gt_Gamestate_Machine *);
+void gt_gsmachine_setCurrentStateIndex(struct gt_Gamestate_Machine *, int);
 
 void gt_gstate_pump_events(struct gt_Gamestate *);
 

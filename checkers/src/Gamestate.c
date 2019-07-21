@@ -24,3 +24,11 @@ void gt_gstate_pump_events(struct gt_Gamestate *state) {
     }
     state->handleKeyState(SDL_GetKeyboardState(NULL));
 }
+
+int gt_gsmachine_getCurrentStateIndex(struct gt_Gamestate_Machine *state) {
+    return (state->current_state_index - 1); // after advanceState counter is set to current + 1
+}
+
+void gt_gsmachine_setCurrentStateIndex(struct gt_Gamestate_Machine *state, int nextState) {
+    state->current_state_index = nextState;
+}
