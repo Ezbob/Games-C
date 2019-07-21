@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include "sdl2/SDL.h"
+#include "SDL.h"
 #include "Gameclock.h"
 #include "Gamestate.h"
 
