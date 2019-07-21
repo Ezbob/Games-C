@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include "Boardstate.h"
 #include "Macros.h"
-#include "Boardstate.h"
 
 extern SDL_Renderer *g_renderer;
 extern SDL_bool g_is_playing;
