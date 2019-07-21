@@ -4,7 +4,7 @@
 #include "sdl2/SDL.h"
 #include <stdint.h>
 
-struct GameClock {
+struct gt_Gameclock {
     double msPerUpdate;
     uint64_t now;
     uint64_t last;
@@ -12,8 +12,8 @@ struct GameClock {
     double updateLag;
 };
 
-void GT_gameclock_init(struct GameClock *, double);
-void GT_gameclock_tick(struct GameClock *);
+void gt_gameclock_init(struct gt_Gameclock *, double);
+void gt_gameclock_tick(struct gt_Gameclock *);
 
 #define GT_CLOCK_TICK(clock) do { \
         clock.last = clock.now; \

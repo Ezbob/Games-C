@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 
-project("checkers"
+project(${EXEC_NAME}
     VERSION 0.1
     DESCRIPTION "A simple checker game"
     LANGUAGES C
@@ -28,6 +28,7 @@ set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++")
 set(SOURCES
     src/Main.c
     src/Gameclock.c
+    src/Gamestate.c
 )
 
 set(INCLUDE_DIRS

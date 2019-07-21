@@ -3,6 +3,7 @@ BUILD_TOOL_CMAKE="Ninja"
 BUILD_DIR_PREFIX=build
 BUILD_DIR_RELEASE=${BUILD_DIR_PREFIX}/release
 BUILD_DIR_DEBUG=${BUILD_DIR_PREFIX}/debug
+EXEC_NAME?=checkers
 STATS?=1
 
 all: debug
@@ -15,11 +16,14 @@ release: $(BUILD_DIR_RELEASE)
 
 $(BUILD_DIR_DEBUG):
 	@mkdir -p $@
-	@cd $@ && cmake -DCMAKE_BUILD_TYPE=Debug -DENABLE_STATS=${STATS} -G ${BUILD_TOOL_CMAKE} ../../
+	@cd $@ && cmake -DCMAKE_BUILD_TYPE=Debug -DEXEC_NAME=${EXEC_NAME} -DENABLE_STATS=${STATS} -G ${BUILD_TOOL_CMAKE} ../../
 
 $(BUILD_DIR_RELEASE):
 	@mkdir -p $@
-	@cd $@ && cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_STATS=0 -G ${BUILD_TOOL_CMAKE} ../../
+	@cd $@ && cmake -DCMAKE_BUILD_TYPE=Release -DEXEC_NAME=${EXEC_NAME} -DENABLE_STATS=0 -G ${BUILD_TOOL_CMAKE} ../../
+
+run: debug
+	./${BUILD_DIR_DEBUG}/${EXEC_NAME}
 
 clean:
 	$(RM) -rf ${BUILD_DIR_PREFIX}

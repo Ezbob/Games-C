@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include "sdl2/SDL.h"
 #include "Gameclock.h"
+#include "Gamestate.h"
 
 #if defined(_WIN32)
     #define MAIN_NAME WinMain
@@ -19,7 +20,10 @@
 #define PC_OPAQUE_WHITE 0xff,0xff,0xff,0xff
 #define PC_OPAQUE_BLACK 0x00,0x00,0x00,0xff
 
-#define BOARD_LENGTH 8
+enum board_consts {
+    BOARD_LENGTH = 8,
+    BOARD_SIZE = (BOARD_LENGTH * BOARD_LENGTH)
+};
 
 static const double MS_PER_UPDATE = 16.0;
 static const int SCREEN_WIDTH = 840;
@@ -49,8 +53,10 @@ static const char *g_window_title = "Pure C Checkers";
 SDL_Window *g_window = NULL;
 SDL_Renderer *g_renderer = NULL;
 SDL_bool g_is_playing = SDL_TRUE;
-SDL_bool g_target = SDL_FALSE;
+struct gt_Gameclock g_gameclock;
+struct gt_Gamestate_Machine g_statemachine;
 
+SDL_bool g_target = SDL_FALSE;
 SDL_Rect g_board[BOARD_LENGTH * BOARD_LENGTH];
 SDL_Rect g_checker_rects[BOARD_LENGTH * BOARD_LENGTH];
 
@@ -59,7 +65,6 @@ int g_red_length = 0;
 
 struct Checker g_checkers[BOARD_LENGTH * BOARD_LENGTH];
 struct Cell g_cellboard[BOARD_LENGTH * BOARD_LENGTH];
-struct GameClock g_gameclock;
 
 struct Cell *g_selected = NULL;
 SDL_Point g_mouse;
@@ -386,7 +391,8 @@ void initCells(struct Cell *cs, int length) {
 
 void initGlobalData() {
     initCells(g_cellboard, BOARD_LENGTH * BOARD_LENGTH);
-    GT_gameclock_init(&g_gameclock, MS_PER_UPDATE);
+    gt_gameclock_init(&g_gameclock, MS_PER_UPDATE);
+    gt_gsmachine_initialize(&g_statemachine);
 }
 
 int MAIN_NAME(int argc, char *argv[])
