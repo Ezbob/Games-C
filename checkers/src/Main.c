@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include "SDL.h"
 #include "Gameclock.h"
+
+#define GT_NUMBER_OF_STATES 1
 #include "Gamestate.h"
 
 #if defined(_WIN32)
@@ -155,7 +157,7 @@ void handleKeyState(const Uint8 *states) {
         g_is_playing = SDL_FALSE;
 }
 
-SDL_bool load() {
+SDL_bool boardstate_load() {
     for (int i = 0; i < BOARD_LENGTH; ++i) {
         for (int j = 0; j < BOARD_LENGTH; ++j) {
 
@@ -345,7 +347,7 @@ void updateSelected() {
     if ( tryToMove(-1, -1) ) return;
 }
 
-void update() {
+void boardstate_update() {
     if (g_selected != NULL && g_target == SDL_TRUE) {
         updateSelected();
 
@@ -355,7 +357,7 @@ void update() {
     }
 }
 
-void render() {
+void boardstate_render() {
     SDL_SetRenderDrawColor(g_renderer, PC_OPAQUE_WHITE);
     SDL_RenderClear(g_renderer);
 
@@ -392,8 +394,21 @@ void initCells(struct Cell *cs, int length) {
 void initGlobalData() {
     initCells(g_cellboard, BOARD_LENGTH * BOARD_LENGTH);
     gt_gameclock_init(&g_gameclock, MS_PER_UPDATE);
-    gt_gsmachine_initialize(&g_statemachine);
+    gt_gsmachine_init(&g_statemachine);
 }
+
+struct gt_Gamestate g_boardgamestate = {
+    .stopped = 0,
+    .update = boardstate_update,
+    .render = boardstate_render,
+    .load = boardstate_load
+};
+
+GT_GAME_STATE_ARRAY = {
+    &g_boardgamestate,
+    GT_END_OF_STATE_ARRAY
+};
+
 
 int MAIN_NAME(int argc, char *argv[])
 {
@@ -406,24 +421,35 @@ int MAIN_NAME(int argc, char *argv[])
 
     initGlobalData();
 
-    if ( !load() ) {
-        return EXIT_FAILURE;
+    struct gt_Gamestate *state = gt_gsmachine_advanceState(&g_statemachine);
+
+    if ( !GT_IS_VALID_STATE(state) ) {
+        perror("No valid start game state");
+        goto initialized_failure;
+    }
+
+    if ( !state->load() ) {
+        goto initialized_failure;
     }
 
     while ( g_is_playing ) {
         pumpEvents();
 
         while ( GT_CLOCK_SHOULD_UPDATE(g_gameclock) ) {
-            update();
+            state->update();
 
             GT_CLOCK_LAG_UPDATE(g_gameclock);
         }
 
-        render();
+        state->render();
 
         GT_CLOCK_TICK(g_gameclock);
     }
 
     sdlDestroy();
     return EXIT_SUCCESS;
+
+initialized_failure:
+    sdlDestroy();
+    return EXIT_FAILURE;
 }
