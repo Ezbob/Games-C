@@ -32,14 +32,15 @@ struct Cell {
 };
 
 SDL_bool g_target = SDL_FALSE;
-SDL_Rect g_board[BOARD_LENGTH * BOARD_LENGTH];
-SDL_Rect g_checker_rects[BOARD_LENGTH * BOARD_LENGTH];
+SDL_Rect g_board[BOARD_SIZE];
+SDL_Rect g_checker_rects[BOARD_SIZE];
 
 int g_green_length = 0;
 int g_red_length = 0;
 
-struct Checker g_checkers[BOARD_LENGTH * BOARD_LENGTH];
-struct Cell g_cellboard[BOARD_LENGTH * BOARD_LENGTH];
+/* There can be max BOARD_SIZE checkers in play */
+struct Checker g_checkers[BOARD_SIZE];
+struct Cell g_cellboard[BOARD_SIZE];
 
 struct Cell *g_selected = NULL;
 SDL_Point g_mouse;
@@ -323,13 +324,4 @@ void boardstate_render() {
 
     SDL_RenderPresent(g_renderer);
 }
-
-void initCells(struct Cell *cs, int length) {
-    for (int i = 0; i < length; ++i) {
-        cs->container = NULL;
-        cs->occubant = NULL;
-    }
-}
-
-
 

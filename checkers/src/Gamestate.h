@@ -19,16 +19,8 @@ struct gt_Gamestate {
 
 struct gt_Gamestate_Machine {
     struct gt_Gamestate **states;
-    int current_state_index;
+    int next_state_index;
 };
-
-/*
-    Sentry state (the null state) defined here to give it
-    a static address 
-*/
-static struct gt_Gamestate GT_ENDSTATE = (struct gt_Gamestate) {
-    .stopped = SDL_TRUE
-}; 
 
 /* Game Machine function api */
 
@@ -40,7 +32,7 @@ void gt_gsmachine_setCurrentStateIndex(struct gt_Gamestate_Machine *, int);
 
 void gt_gstate_pump_events(struct gt_Gamestate *);
 
-#define GT_STATE_ARRAY_END (&GT_ENDSTATE)
+#define GT_STATE_ARRAY_END NULL
 
 
 #endif
