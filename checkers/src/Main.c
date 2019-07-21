@@ -13,6 +13,7 @@
 #endif
 
 #define UNUSED(x) ((void) x)
+#define NUMBER_OF_GAME_STATES 2
 
 static const double MS_PER_UPDATE = 16.0;
 static const int SCREEN_WIDTH = 840;
@@ -25,6 +26,12 @@ SDL_bool g_is_playing = SDL_TRUE;
 
 struct gt_Gameclock g_gameclock;
 struct gt_Gamestate_Machine g_statemachine;
+struct gt_Gamestate *gt_gamestates[NUMBER_OF_GAME_STATES];
+
+void initGlobalData() {
+    gt_gameclock_init(&g_gameclock, MS_PER_UPDATE);
+    gt_gsmachine_init(&g_statemachine, gt_gamestates);
+}
 
 SDL_bool sdlInit() {
     if ( SDL_CreateWindowAndRenderer(SCREEN_WIDTH, SCREEN_HEIGHT,
@@ -59,15 +66,10 @@ struct gt_Gamestate bs_boardstate = {
     .handleKeyState = boardstate_handleKeyState
 }; 
 
-struct gt_Gamestate *gt_gamestates[2] = {
+struct gt_Gamestate *gt_gamestates[NUMBER_OF_GAME_STATES] = {
     &bs_boardstate,
     GT_STATE_ARRAY_END
 };
-
-void initGlobalData() {
-    gt_gameclock_init(&g_gameclock, MS_PER_UPDATE);
-    gt_gsmachine_init(&g_statemachine, gt_gamestates);
-}
 
 int MAIN_NAME(int argc, char *argv[])
 {
