@@ -29,6 +29,7 @@ set(SOURCES
     src/Main.c
     src/Gameclock.c
     src/Gamestate.c
+    src/Boardstate.c
 )
 
 set(INCLUDE_DIRS
