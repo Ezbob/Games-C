@@ -423,28 +423,33 @@ int MAIN_NAME(int argc, char *argv[])
 
     struct gt_Gamestate *state = gt_gsmachine_advanceState(&g_statemachine);
 
-    if ( !GT_IS_VALID_STATE(state) ) {
+    if ( state == GT_STATE_ARRAY_END ) {
         perror("No valid start game state");
         goto initialized_failure;
     }
 
-    if ( !state->load() ) {
-        perror("Could not initialize state");
-        goto initialized_failure;
-    }
-
-    while ( g_is_playing ) {
-        pumpEvents(state);
-
-        while ( GT_CLOCK_SHOULD_UPDATE(g_gameclock) ) {
-            state->update();
-
-            GT_CLOCK_LAG_UPDATE(g_gameclock);
+    while ( g_is_playing && state != GT_STATE_ARRAY_END ) {
+        if ( !state->load() ) {
+            perror("Could not initialize state");
+            goto initialized_failure;
         }
 
-        state->render();
+        while ( g_is_playing && !state->stopped ) {
 
-        GT_CLOCK_TICK(g_gameclock);
+            gt_gstate_pump_events(state);
+
+            while ( GT_CLOCK_SHOULD_UPDATE(g_gameclock) ) {
+                state->update();
+
+                GT_CLOCK_LAG_UPDATE(g_gameclock);
+            }
+
+            state->render();
+
+            GT_CLOCK_TICK(g_gameclock);
+        }
+
+        state = gt_gsmachine_advanceState(&g_statemachine);
     }
 
     sdlDestroy();

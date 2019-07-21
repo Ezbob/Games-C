@@ -27,10 +27,7 @@ struct gt_Gamestate_Machine {
     a static address 
 */
 static struct gt_Gamestate GT_ENDSTATE = ((struct gt_Gamestate){
-    .stopped = SDL_FALSE,
-    .update = NULL,
-    .render = NULL,
-    .load = NULL,
+    .stopped = SDL_TRUE
 }); 
 
 /* Game Machine function api */
@@ -39,8 +36,9 @@ SDL_bool gt_gsmachine_hasNextState(struct gt_Gamestate_Machine *);
 struct gt_Gamestate *gt_gsmachine_advanceState(struct gt_Gamestate_Machine *);
 SDL_bool gt_gsmachine_init(struct gt_Gamestate_Machine *, struct gt_Gamestate **);
 
+void gt_gstate_pump_events(struct gt_Gamestate *);
+
 #define GT_STATE_ARRAY_END (&GT_ENDSTATE)
-#define GT_IS_VALID_STATE(state) (state != GT_STATE_ARRAY_END)
 
 
 #endif
