@@ -24,13 +24,13 @@ struct gt_Gamestate_Machine {
 
 /* Game Machine function api */
 
-SDL_bool gt_gsmachine_hasNextState(struct gt_Gamestate_Machine *);
-struct gt_Gamestate *gt_gsmachine_advanceState(struct gt_Gamestate_Machine *);
-SDL_bool gt_gsmachine_init(struct gt_Gamestate_Machine *, struct gt_Gamestate **);
-int gt_gsmachine_getCurrentStateIndex(struct gt_Gamestate_Machine *);
-void gt_gsmachine_setCurrentStateIndex(struct gt_Gamestate_Machine *, int);
+SDL_bool gt_gsmachine_hasNextState(struct gt_Gamestate_Machine *m);
+struct gt_Gamestate *gt_gsmachine_advanceState(struct gt_Gamestate_Machine *m);
+SDL_bool gt_gsmachine_init(struct gt_Gamestate_Machine *m, struct gt_Gamestate **s);
+int gt_gsmachine_getCurrentStateIndex(struct gt_Gamestate_Machine *m);
+void gt_gsmachine_setCurrentStateIndex(struct gt_Gamestate_Machine *m, int i);
 
-void gt_gstate_pump_events(struct gt_Gamestate *);
+void gt_gstate_pump_events(struct gt_Gamestate *m);
 
 #define GT_STATE_ARRAY_END NULL
 #define GT_SETUP_GAMESTATE(prefix) { \

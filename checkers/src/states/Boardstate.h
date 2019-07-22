@@ -8,7 +8,7 @@
 SDL_bool boardstate_load(void);
 void boardstate_render(void);
 void boardstate_update(void);
-void boardstate_handleKeyState(const Uint8 *);
-void boardstate_handleEvent(const SDL_Event *);
+void boardstate_handleKeyState(const Uint8 *ks);
+void boardstate_handleEvent(const SDL_Event *e);
 
 #endif

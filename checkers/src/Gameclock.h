@@ -12,8 +12,8 @@ struct gt_Gameclock {
     double updateLag;
 };
 
-void gt_gameclock_init(struct gt_Gameclock *, double);
-void gt_gameclock_tick(struct gt_Gameclock *);
+void gt_gameclock_init(struct gt_Gameclock *c, double ms);
+void gt_gameclock_tick(struct gt_Gameclock *c);
 
 #define GT_CLOCK_TICK(clock) do { \
         clock.last = clock.now; \
