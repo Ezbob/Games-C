@@ -29,11 +29,12 @@ set(SOURCES
     src/Main.c
     src/Gameclock.c
     src/Gamestate.c
-    src/Boardstate.c
+    src/states/Boardstate.c
+    src/states/Pausestate.c
 )
 
 set(INCLUDE_DIRS
-    "${PROJECT_SOURCE_DIR}/include"
+    "${PROJECT_SOURCE_DIR}/src"
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})

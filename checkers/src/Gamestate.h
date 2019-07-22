@@ -33,6 +33,12 @@ void gt_gsmachine_setCurrentStateIndex(struct gt_Gamestate_Machine *, int);
 void gt_gstate_pump_events(struct gt_Gamestate *);
 
 #define GT_STATE_ARRAY_END NULL
-
+#define GT_SETUP_GAMESTATE(prefix) { \
+    .load = prefix## _load, \
+    .update = prefix## _update, \
+    .render = prefix## _render, \
+    .handleEvent = prefix## _handleEvent, \
+    .handleKeyState = prefix## _handleKeyState \
+}
 
 #endif

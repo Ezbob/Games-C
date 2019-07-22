@@ -5,6 +5,8 @@
 extern SDL_Renderer *g_renderer;
 extern SDL_bool g_is_playing;
 
+struct gt_Gamestate gs_boardstate;
+
 enum board_consts {
     BOARD_LENGTH = 8,
     BOARD_SIZE = (BOARD_LENGTH * BOARD_LENGTH)
@@ -102,7 +104,7 @@ void boardstate_handleEvent(const SDL_Event *event) {
 
 void boardstate_handleKeyState(const Uint8 *states) {
     if (states[SDL_SCANCODE_ESCAPE])
-        g_is_playing = SDL_FALSE;
+        gs_boardstate.stopped = SDL_TRUE;
 }
 
 SDL_bool boardstate_load() {
@@ -324,3 +326,4 @@ void boardstate_render() {
     SDL_RenderPresent(g_renderer);
 }
 
+struct gt_Gamestate gs_boardstate = GT_SETUP_GAMESTATE(boardstate);

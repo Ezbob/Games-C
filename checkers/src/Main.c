@@ -4,7 +4,6 @@
 #include "Macros.h"
 #include "Gameclock.h"
 #include "Gamestate.h"
-#include "Boardstate.h"
 
 #if defined(_WIN32)
     #define MAIN_NAME WinMain
@@ -12,8 +11,7 @@
     #define MAIN_NAME main
 #endif
 
-#define UNUSED(x) ((void) x)
-#define NUMBER_OF_GAME_STATES 2
+#define NUMBER_OF_GAME_STATES 3
 
 static const double MS_PER_UPDATE = 16.0;
 static const int SCREEN_WIDTH = 840;
@@ -58,16 +56,12 @@ void sdlDestroy() {
     SDL_DestroyWindow(g_window);
 }
 
-struct gt_Gamestate bs_boardstate = {
-    .load = boardstate_load,
-    .update = boardstate_update,
-    .render = boardstate_render,
-    .handleEvent = boardstate_handleEvent,
-    .handleKeyState = boardstate_handleKeyState
-}; 
+extern struct gt_Gamestate gs_boardstate;
+extern struct gt_Gamestate gs_pausestate;
 
 struct gt_Gamestate *gt_gamestates[NUMBER_OF_GAME_STATES] = {
-    &bs_boardstate,
+    &gs_boardstate,
+    &gs_pausestate,
     GT_STATE_ARRAY_END
 };
 
