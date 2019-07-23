@@ -86,7 +86,7 @@ int MAIN_NAME(int argc, char *argv[])
 
         if ( !state->isLoaded && !(state->isLoaded = state->load()) ) {
             perror("Could not initialize state");
-            goto initialized_failure;
+            goto unload_initialized_failure;
         }
 
         while ( g_is_playing && !g_statemachine.shouldSkip ) {
@@ -111,6 +111,8 @@ int MAIN_NAME(int argc, char *argv[])
     sdlDestroy();
     return EXIT_SUCCESS;
 
+unload_initialized_failure:
+    unloadData(&g_statemachine);
 initialized_failure:
     sdlDestroy();
     return EXIT_FAILURE;
