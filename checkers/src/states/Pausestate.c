@@ -2,9 +2,11 @@
 #include "Pausestate.h"
 #include "../Macros.h"
 #include "../Gamestate.h"
+#include "../States.h"
 
 extern SDL_Renderer *g_renderer;
 extern SDL_bool g_is_playing;
+extern struct gt_Gamestate_Machine g_statemachine;
 
 struct gt_Gamestate gs_pausestate;
 
@@ -23,12 +25,19 @@ void pausestate_render(void) {
 void pausestate_update(void) {}
 
 void pausestate_handleKeyState(const Uint8 *keyState) {
-    if (keyState[SDL_SCANCODE_RETURN])
-        gs_pausestate.stopped = SDL_TRUE;
+    if ( keyState[SDL_SCANCODE_RETURN] ) {
+        gt_gsmachine_goToState(&g_statemachine, GT_BOARD_STATE);
+    }
 }
 
 void pausestate_handleEvent(const SDL_Event *event) {
-    UNUSED(event);
+    switch (event->type) {
+        case SDL_QUIT:
+            g_is_playing = SDL_FALSE;
+            break;
+        default:
+            break;
+    }
 }
 
 struct gt_Gamestate gs_pausestate = GT_SETUP_GAMESTATE(pausestate);

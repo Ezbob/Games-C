@@ -6,8 +6,6 @@ SDL_bool gt_gsmachine_hasNextState(struct gt_Gamestate_Machine *machine) {
 }
 
 struct gt_Gamestate *gt_gsmachine_advanceState(struct gt_Gamestate_Machine *machine) {
-    if (!machine)
-        return NULL;
     return machine->states[machine->next_state_index++];
 }
 
@@ -25,10 +23,20 @@ void gt_gstate_pump_events(struct gt_Gamestate *state) {
     state->handleKeyState(SDL_GetKeyboardState(NULL));
 }
 
-int gt_gsmachine_getCurrentStateIndex(struct gt_Gamestate_Machine *state) {
-    return (state->next_state_index - 1); // after advanceState counter is set to current + 1
+int gt_gsmachine_getCurrentStateIndex(struct gt_Gamestate_Machine *m) {
+    return (m->next_state_index - 1); // after advanceState counter is set to current + 1
 }
 
-void gt_gsmachine_setCurrentStateIndex(struct gt_Gamestate_Machine *state, int nextState) {
-    state->next_state_index = nextState;
+void gt_gsmachine_setCurrentStateIndex(struct gt_Gamestate_Machine *m, int nextState) {
+    m->next_state_index = nextState;
+}
+
+void gt_gsmachine_goToState(struct gt_Gamestate_Machine *m, int i) {
+    m->next_state_index = (i + 1);
+    m->shouldSkip = SDL_TRUE;
+}
+
+struct gt_Gamestate *gt_gsmachine_setupSkip(struct gt_Gamestate_Machine *m) {
+    m->shouldSkip = SDL_FALSE;
+    return m->states[m->next_state_index - 1];
 }

@@ -31,6 +31,7 @@ set(SOURCES
     src/Gamestate.c
     src/states/Boardstate.c
     src/states/Pausestate.c
+    src/States.c
 )
 
 set(INCLUDE_DIRS

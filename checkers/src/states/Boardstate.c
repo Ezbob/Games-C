@@ -1,9 +1,11 @@
 #include <stdio.h>
 #include "Boardstate.h"
 #include "Macros.h"
+#include "../States.h"
 
 extern SDL_Renderer *g_renderer;
 extern SDL_bool g_is_playing;
+extern struct gt_Gamestate_Machine g_statemachine;
 
 struct gt_Gamestate gs_boardstate;
 
@@ -103,8 +105,9 @@ void boardstate_handleEvent(const SDL_Event *event) {
 }
 
 void boardstate_handleKeyState(const Uint8 *states) {
-    if (states[SDL_SCANCODE_ESCAPE])
-        gs_boardstate.stopped = SDL_TRUE;
+    if ( states[SDL_SCANCODE_ESCAPE] ) {
+        gt_gsmachine_goToState(&g_statemachine, GT_PAUSE_STATE);
+    }
 }
 
 SDL_bool boardstate_load() {

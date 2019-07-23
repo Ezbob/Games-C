@@ -4,6 +4,7 @@
 #include "Macros.h"
 #include "Gameclock.h"
 #include "Gamestate.h"
+#include "States.h"
 
 #if defined(_WIN32)
     #define MAIN_NAME WinMain
@@ -11,7 +12,7 @@
     #define MAIN_NAME main
 #endif
 
-#define NUMBER_OF_GAME_STATES 3
+extern struct gt_Gamestate *gt_gamestates[GT_NUMBER_OF_STATES];
 
 static const double MS_PER_UPDATE = 16.0;
 static const int SCREEN_WIDTH = 840;
@@ -24,7 +25,7 @@ SDL_bool g_is_playing = SDL_TRUE;
 
 struct gt_Gameclock g_gameclock;
 struct gt_Gamestate_Machine g_statemachine;
-struct gt_Gamestate *gt_gamestates[NUMBER_OF_GAME_STATES];
+
 
 void initGlobalData() {
     gt_gameclock_init(&g_gameclock, MS_PER_UPDATE);
@@ -56,15 +57,6 @@ void sdlDestroy() {
     SDL_DestroyWindow(g_window);
 }
 
-extern struct gt_Gamestate gs_boardstate;
-extern struct gt_Gamestate gs_pausestate;
-
-struct gt_Gamestate *gt_gamestates[NUMBER_OF_GAME_STATES] = {
-    &gs_boardstate,
-    &gs_pausestate,
-    GT_STATE_ARRAY_END
-};
-
 int MAIN_NAME(int argc, char *argv[])
 {
     UNUSED(argc);
@@ -83,8 +75,10 @@ int MAIN_NAME(int argc, char *argv[])
         goto initialized_failure;
     }
 
+start_of_loop:
     while ( g_is_playing && state != GT_STATE_ARRAY_END ) {
-        if ( !state->load() ) {
+
+        if ( !state->isLoaded && !(state->isLoaded = state->load()) ) {
             perror("Could not initialize state");
             goto initialized_failure;
         }
@@ -102,6 +96,11 @@ int MAIN_NAME(int argc, char *argv[])
             state->render();
 
             GT_CLOCK_TICK(g_gameclock);
+
+            if ( g_statemachine.shouldSkip ) {
+                state = gt_gsmachine_setupSkip(&g_statemachine);
+                goto start_of_loop;
+            }
         }
 
         state = gt_gsmachine_advanceState(&g_statemachine);
