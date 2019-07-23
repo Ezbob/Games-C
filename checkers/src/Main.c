@@ -32,6 +32,13 @@ void initGlobalData() {
     gt_gsmachine_init(&g_statemachine, gt_gamestates);
 }
 
+void unloadData(struct gt_Gamestate_Machine *m) {
+    for (int i = 0; i < (GT_NUMBER_OF_STATES - 1); ++i) {
+        struct gt_Gamestate *state = m->states[i];
+        if (state->isLoaded) state->unload();
+    }
+}
+
 SDL_bool sdlInit() {
     if ( SDL_CreateWindowAndRenderer(SCREEN_WIDTH, SCREEN_HEIGHT,
                                      SDL_WINDOW_SHOWN, &g_window, &g_renderer) == -1 )
@@ -100,6 +107,7 @@ int MAIN_NAME(int argc, char *argv[])
         state = gt_gsmachine_setupSkip(&g_statemachine);
     }
 
+    unloadData(&g_statemachine);
     sdlDestroy();
     return EXIT_SUCCESS;
 
