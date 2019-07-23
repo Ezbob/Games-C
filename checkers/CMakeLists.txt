@@ -32,6 +32,7 @@ set(SOURCES
     src/states/Boardstate.c
     src/states/Pausestate.c
     src/States.c
+    src/convert.c
 )
 
 set(INCLUDE_DIRS

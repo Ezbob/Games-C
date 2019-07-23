@@ -5,6 +5,8 @@
 #include "Gameclock.h"
 #include "Gamestate.h"
 #include "States.h"
+#include "SDL_ttf.h"
+#include "Shared.h"
 
 #if defined(_WIN32)
     #define MAIN_NAME WinMain
@@ -14,10 +16,6 @@
 
 extern struct gt_Gamestate *gt_gamestates[GT_NUMBER_OF_STATES];
 
-static const double MS_PER_UPDATE = 16.0;
-static const int SCREEN_WIDTH = 840;
-static const int SCREEN_HEIGHT = 860;
-
 static const char *g_window_title = "Pure C Checkers";
 SDL_Window *g_window = NULL;
 SDL_Renderer *g_renderer = NULL;
@@ -25,7 +23,6 @@ SDL_bool g_is_playing = SDL_TRUE;
 
 struct gt_Gameclock g_gameclock;
 struct gt_Gamestate_Machine g_statemachine;
-
 
 void initGlobalData() {
     gt_gameclock_init(&g_gameclock, MS_PER_UPDATE);
@@ -50,6 +47,10 @@ SDL_bool sdlInit() {
     if ( SDL_RenderClear(g_renderer) == -1 )
         goto error_label;
 
+    if ( TTF_Init() == -1 ) {
+        goto error_label;
+    }
+
     SDL_SetWindowTitle(g_window, g_window_title);
 
     return SDL_TRUE;
@@ -60,6 +61,7 @@ error_label:
 }
 
 void sdlDestroy() {
+    TTF_Quit();
     SDL_DestroyRenderer(g_renderer);
     SDL_DestroyWindow(g_window);
 }
