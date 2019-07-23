@@ -11,12 +11,4 @@ enum gt_states {
     GT_NUMBER_OF_STATES
 };
 
-#define GT_SETUP_GAMESTATE(prefix) { \
-    .load = prefix## _load, \
-    .update = prefix## _update, \
-    .render = prefix## _render, \
-    .handleEvent = prefix## _handleEvent, \
-    .handleKeyState = prefix## _handleKeyState \
-}
-
 #endif
