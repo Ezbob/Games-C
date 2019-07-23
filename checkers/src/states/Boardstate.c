@@ -81,6 +81,107 @@ void findSelected() {
     }
 }
 
+void switchTurn() {
+    if (g_playingColor == GREEN) {
+        g_playingColor = RED;
+    } else {
+        g_playingColor = GREEN;
+    }
+}
+
+void doMoveToEmpty(struct Cell *target) {
+    struct Checker *source = g_selected->occubant;
+
+    source->rect->x = target->container->x + 20;
+    source->rect->y = target->container->y + 20;
+
+    switchTurn();
+
+    target->occubant = source;
+    g_selected->occubant = NULL;
+}
+
+void doOvertake(struct Cell *taken, struct Cell *target) {
+    struct Checker *source = g_selected->occubant;
+
+    source->rect->x = target->container->x + 20;
+    source->rect->y = target->container->y + 20;
+
+    target->occubant = source;
+    g_selected->occubant = NULL;
+
+    memset(taken->occubant->rect, 0, sizeof(SDL_Rect));
+
+    taken->occubant = NULL;
+}
+
+SDL_bool tryToOvertake(struct Cell *clickedGridCell, int xOffset, int yOffset) {
+    int y2diff = g_selected->rowIndex + (yOffset * 2);
+    int x2diff = g_selected->columnIndex + (xOffset * 2);
+    int nextNextIndex = y2diff * BOARD_LENGTH + x2diff;
+
+    if (
+        x2diff < 0 ||
+        x2diff >= BOARD_LENGTH ||
+        y2diff < 0 ||
+        y2diff >= BOARD_LENGTH
+    ) {
+        return SDL_FALSE;
+    }
+
+    if ( 0 <= nextNextIndex && nextNextIndex < BOARD_LENGTH * BOARD_LENGTH ) {
+        struct Cell *nextNextCell = g_cellboard + nextNextIndex;
+        if ( nextNextCell->occubant == NULL) {
+            doOvertake(clickedGridCell, nextNextCell);
+            return SDL_TRUE;
+        }
+    }
+
+    return SDL_FALSE;
+}
+
+SDL_bool tryToMove(int xOffset, int yOffset) {
+    int ydiff = g_selected->rowIndex + yOffset;
+    int xdiff = g_selected->columnIndex + xOffset;
+    int nextIndex = ydiff * BOARD_LENGTH + xdiff;
+
+    if ( 0 <= nextIndex && nextIndex < (BOARD_LENGTH * BOARD_LENGTH) ) {
+        struct Cell *gridCell = g_cellboard + nextIndex;
+
+        if (
+            xdiff < 0             ||
+            xdiff >= BOARD_LENGTH ||
+            ydiff < 0             ||
+            ydiff >= BOARD_LENGTH
+        ) {
+            // constraint against wrap around
+            return SDL_FALSE;
+        }
+
+        if ( SDL_PointInRect(&g_mouse, gridCell->container) ) {
+            if ( gridCell->occubant == NULL ) {
+                doMoveToEmpty(gridCell);
+                return SDL_TRUE;
+            } else if ( gridCell->occubant->color != g_selected->occubant->color ) {
+                return tryToOvertake(gridCell, xOffset, yOffset);
+            }
+        }
+    }
+
+    return SDL_FALSE;
+}
+
+void updateSelected() {
+    if ( tryToMove( 1,  1) ) return;
+    if ( tryToMove(-1,  1) ) return;
+    if ( tryToMove( 1, -1) ) return;
+    if ( tryToMove(-1, -1) ) return;
+}
+
+/*
+ * External state api
+ */
+
 void boardstate_handleEvent(const SDL_Event *event) {
     Uint32 mouseState;
     switch(event->type) {
@@ -201,103 +302,6 @@ SDL_bool boardstate_load() {
     }
 
     return SDL_TRUE;
-}
-
-void switchTurn() {
-    if (g_playingColor == GREEN) {
-        g_playingColor = RED;
-    } else {
-        g_playingColor = GREEN;
-    }
-}
-
-void doMoveToEmpty(struct Cell *target) {
-    struct Checker *source = g_selected->occubant;
-
-    source->rect->x = target->container->x + 20;
-    source->rect->y = target->container->y + 20;
-
-    switchTurn();
-
-    target->occubant = source;
-    g_selected->occubant = NULL;
-}
-
-void doOvertake(struct Cell *taken, struct Cell *target) {
-    struct Checker *source = g_selected->occubant;
-
-    source->rect->x = target->container->x + 20;
-    source->rect->y = target->container->y + 20;
-
-    target->occubant = source;
-    g_selected->occubant = NULL;
-
-    memset(taken->occubant->rect, 0, sizeof(SDL_Rect));
-
-    taken->occubant = NULL;
-}
-
-SDL_bool tryToOvertake(struct Cell *clickedGridCell, int xOffset, int yOffset) {
-    int y2diff = g_selected->rowIndex + (yOffset * 2);
-    int x2diff = g_selected->columnIndex + (xOffset * 2);
-    int nextNextIndex = y2diff * BOARD_LENGTH + x2diff;
-
-    if (
-        x2diff < 0 ||
-        x2diff >= BOARD_LENGTH ||
-        y2diff < 0 ||
-        y2diff >= BOARD_LENGTH
-    ) {
-        return SDL_FALSE;
-    }
-
-    if ( 0 <= nextNextIndex && nextNextIndex < BOARD_LENGTH * BOARD_LENGTH ) {
-        struct Cell *nextNextCell = g_cellboard + nextNextIndex;
-        if ( nextNextCell->occubant == NULL) {
-            doOvertake(clickedGridCell, nextNextCell);
-            return SDL_TRUE;
-        }
-    }
-
-    return SDL_FALSE;
-}
-
-SDL_bool tryToMove(int xOffset, int yOffset) {
-    int ydiff = g_selected->rowIndex + yOffset;
-    int xdiff = g_selected->columnIndex + xOffset;
-    int nextIndex = ydiff * BOARD_LENGTH + xdiff;
-
-    if ( 0 <= nextIndex && nextIndex < (BOARD_LENGTH * BOARD_LENGTH) ) {
-        struct Cell *gridCell = g_cellboard + nextIndex;
-
-        if (
-            xdiff < 0             ||
-            xdiff >= BOARD_LENGTH ||
-            ydiff < 0             ||
-            ydiff >= BOARD_LENGTH
-        ) {
-            // constraint against wrap around
-            return SDL_FALSE;
-        }
-
-        if ( SDL_PointInRect(&g_mouse, gridCell->container) ) {
-            if ( gridCell->occubant == NULL ) {
-                doMoveToEmpty(gridCell);
-                return SDL_TRUE;
-            } else if ( gridCell->occubant->color != g_selected->occubant->color ) {
-                return tryToOvertake(gridCell, xOffset, yOffset);
-            }
-        }
-    }
-
-    return SDL_FALSE;
-}
-
-void updateSelected() {
-    if ( tryToMove( 1,  1) ) return;
-    if ( tryToMove(-1,  1) ) return;
-    if ( tryToMove( 1, -1) ) return;
-    if ( tryToMove(-1, -1) ) return;
 }
 
 void boardstate_update() {
