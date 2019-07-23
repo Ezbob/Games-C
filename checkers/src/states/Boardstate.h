@@ -10,5 +10,6 @@ void boardstate_render(void);
 void boardstate_update(void);
 void boardstate_handleKeyState(const Uint8 *ks);
 void boardstate_handleEvent(const SDL_Event *e);
+void boardstate_unload(void);
 
 #endif

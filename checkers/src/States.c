@@ -9,7 +9,8 @@
     .update = prefix## _update, \
     .render = prefix## _render, \
     .handleEvent = prefix## _handleEvent, \
-    .handleKeyState = prefix## _handleKeyState \
+    .handleKeyState = prefix## _handleKeyState, \
+    .unload = prefix## _unload \
 }
 
 struct gt_Gamestate gs_boardstate = GT_SETUP_GAMESTATE(boardstate);

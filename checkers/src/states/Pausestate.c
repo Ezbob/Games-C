@@ -22,6 +22,8 @@ void pausestate_render(void) {
 
 void pausestate_update(void) {}
 
+void pausestate_unload(void) {}
+
 void pausestate_handleKeyState(const Uint8 *keyState) {
     if ( keyState[SDL_SCANCODE_RETURN] ) {
         gt_gsmachine_goToState(&g_statemachine, GT_BOARD_STATE);

@@ -108,6 +108,8 @@ void boardstate_handleKeyState(const Uint8 *states) {
     }
 }
 
+void boardstate_unload(void) {}
+
 SDL_bool boardstate_load() {
     for (int i = 0; i < BOARD_LENGTH; ++i) {
         for (int j = 0; j < BOARD_LENGTH; ++j) {

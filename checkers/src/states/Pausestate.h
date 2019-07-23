@@ -9,5 +9,6 @@ void pausestate_render(void);
 void pausestate_update(void);
 void pausestate_handleKeyState(const Uint8 *ks);
 void pausestate_handleEvent(const SDL_Event *e);
+void pausestate_unload(void);
 
 #endif

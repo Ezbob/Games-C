@@ -12,7 +12,8 @@ struct gt_Gamestate {
     SDL_bool isLoaded;
     gs_eventstatefunc handleEvent;
     gs_keystatefunc handleKeyState;
-    gs_boolstatefunc load; 
+    gs_boolstatefunc load;
+    gs_statefunc unload;
     gs_statefunc update;
     gs_statefunc render;
 };
