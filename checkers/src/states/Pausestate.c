@@ -8,8 +8,6 @@ extern SDL_Renderer *g_renderer;
 extern SDL_bool g_is_playing;
 extern struct gt_Gamestate_Machine g_statemachine;
 
-struct gt_Gamestate gs_pausestate;
-
 SDL_bool pausestate_load(void) {
 
     return SDL_TRUE;
@@ -40,4 +38,3 @@ void pausestate_handleEvent(const SDL_Event *event) {
     }
 }
 
-struct gt_Gamestate gs_pausestate = GT_SETUP_GAMESTATE(pausestate);

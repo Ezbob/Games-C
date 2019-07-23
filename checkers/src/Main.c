@@ -75,7 +75,6 @@ int MAIN_NAME(int argc, char *argv[])
         goto initialized_failure;
     }
 
-start_of_loop:
     while ( g_is_playing && state != GT_STATE_ARRAY_END ) {
 
         if ( !state->isLoaded && !(state->isLoaded = state->load()) ) {
@@ -83,7 +82,7 @@ start_of_loop:
             goto initialized_failure;
         }
 
-        while ( g_is_playing && !state->stopped ) {
+        while ( g_is_playing && !g_statemachine.shouldSkip ) {
 
             gt_gstate_pump_events(state);
 
@@ -96,14 +95,9 @@ start_of_loop:
             state->render();
 
             GT_CLOCK_TICK(g_gameclock);
-
-            if ( g_statemachine.shouldSkip ) {
-                state = gt_gsmachine_setupSkip(&g_statemachine);
-                goto start_of_loop;
-            }
         }
 
-        state = gt_gsmachine_advanceState(&g_statemachine);
+        state = gt_gsmachine_setupSkip(&g_statemachine);
     }
 
     sdlDestroy();

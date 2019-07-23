@@ -9,7 +9,6 @@ typedef void (*gs_eventstatefunc)(const SDL_Event *);
 typedef void (*gs_keystatefunc)(const Uint8 *);
 
 struct gt_Gamestate {
-    SDL_bool stopped;
     SDL_bool isLoaded;
     gs_eventstatefunc handleEvent;
     gs_keystatefunc handleKeyState;

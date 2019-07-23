@@ -1,13 +1,11 @@
 #include <stdio.h>
 #include "Boardstate.h"
 #include "Macros.h"
-#include "../States.h"
+#include "States.h"
 
 extern SDL_Renderer *g_renderer;
 extern SDL_bool g_is_playing;
 extern struct gt_Gamestate_Machine g_statemachine;
-
-struct gt_Gamestate gs_boardstate;
 
 enum board_consts {
     BOARD_LENGTH = 8,
@@ -328,5 +326,3 @@ void boardstate_render() {
 
     SDL_RenderPresent(g_renderer);
 }
-
-struct gt_Gamestate gs_boardstate = GT_SETUP_GAMESTATE(boardstate);
