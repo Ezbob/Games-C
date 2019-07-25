@@ -7,6 +7,7 @@
 enum gt_states {
     GT_BOARD_STATE = 0,
     GT_PAUSE_STATE,
+    GT_GAME_OVER_STATE,
     GT_END_STATE,
     GT_NUMBER_OF_STATES
 };

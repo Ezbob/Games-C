@@ -32,12 +32,16 @@ struct Cell {
     int rowIndex;
 };
 
-SDL_bool g_target = SDL_FALSE;
+SDL_bool g_is_target_selected = SDL_FALSE;
 SDL_Rect g_board[BOARD_SIZE];
 SDL_Rect g_checker_rects[BOARD_SIZE];
 
-int g_green_length = 0;
-int g_red_length = 0;
+struct Score {
+    int green_remaining;
+    int red_remaining;
+    int green_length;
+    int red_length;
+} g_score;
 
 /* There can be max BOARD_SIZE checkers in play */
 struct Checker g_checkers[BOARD_SIZE];
@@ -106,6 +110,12 @@ void doOvertake(struct Cell *taken, struct Cell *target) {
 
     source->rect->x = target->container->x + 20;
     source->rect->y = target->container->y + 20;
+
+    if (taken->occubant->color == GREEN) {
+        g_score.green_remaining--;
+    } else {
+        g_score.red_remaining--;
+    }
 
     target->occubant = source;
     g_selected->occubant = NULL;
@@ -194,7 +204,7 @@ void boardstate_handleEvent(const SDL_Event *event) {
                 if (g_selected == NULL) {
                     findSelected();
                 } else {
-                    g_target = SDL_TRUE;
+                    g_is_target_selected = SDL_TRUE;
                 }
             }
             break;
@@ -232,8 +242,8 @@ SDL_bool boardstate_load() {
             /** GREEN **/
             if ( i % 2 == 0 && i < (BOARD_LENGTH / 2) ) {
                 if (j % 2 == 0) {
-                    struct Checker *checker = g_checkers + (g_green_length);
-                    SDL_Rect *rect = g_checker_rects + (g_green_length++);
+                    struct Checker *checker = g_checkers + (g_score.green_length);
+                    SDL_Rect *rect = g_checker_rects + (g_score.green_length++);
 
                     rect->x = (100 * (j % BOARD_LENGTH)) + 40;
                     rect->y = (container->y + 20);
@@ -247,8 +257,8 @@ SDL_bool boardstate_load() {
                 }
             } else if ( i % 2 != 0 && i < (BOARD_LENGTH / 2) - 1) {
                 if (j % 2 != 0) {
-                    struct Checker *checker = g_checkers + (g_green_length);
-                    SDL_Rect *rect = g_checker_rects + (g_green_length++);
+                    struct Checker *checker = g_checkers + (g_score.green_length);
+                    SDL_Rect *rect = g_checker_rects + (g_score.green_length++);
 
                     rect->x = (100 * (j % BOARD_LENGTH)) + 40;
                     rect->y = (container->y + 20);
@@ -265,10 +275,10 @@ SDL_bool boardstate_load() {
             /** RED **/
             if ( i % 2 == 0 && i > (BOARD_LENGTH / 2) ) {
                 if (j % 2 == 0) {
-                    int currentIndex =  (g_green_length + g_red_length);
+                    int currentIndex =  (g_score.green_length + g_score.red_length);
                     struct Checker *checker = g_checkers + currentIndex;
                     SDL_Rect *rect = g_checker_rects + currentIndex;
-                    g_red_length++;
+                    g_score.red_length++;
 
                     rect->x = (100 * (j % BOARD_LENGTH)) + 40;
                     rect->y = (container->y + 20);
@@ -282,10 +292,10 @@ SDL_bool boardstate_load() {
                 }
             } else if ( i % 2 != 0 && i > (BOARD_LENGTH / 2) ) {
                 if (j % 2 != 0) {
-                    int currentIndex =  (g_green_length + g_red_length);
+                    int currentIndex =  (g_score.green_length + g_score.red_length);
                     struct Checker *checker = g_checkers + currentIndex;
                     SDL_Rect *rect = g_checker_rects + currentIndex;
-                    g_red_length++;
+                    g_score.red_length++;
 
                     rect->x = (100 * (j % BOARD_LENGTH)) + 40;
                     rect->y = (container->y + 20);
@@ -301,16 +311,25 @@ SDL_bool boardstate_load() {
         }
     }
 
+    g_score.green_remaining = g_score.green_length;
+    g_score.red_remaining = g_score.red_length;
+
     return SDL_TRUE;
 }
 
 void boardstate_update() {
-    if (g_selected != NULL && g_target == SDL_TRUE) {
+
+    if (g_score.red_remaining == 0 || g_score.green_remaining == 0) {
+        gt_gsmachine_goToState(&g_statemachine, GT_GAME_OVER_STATE);
+        return;
+    }
+
+    if (g_selected != NULL && g_is_target_selected == SDL_TRUE) {
         updateSelected();
 
         memset(&g_selectionBox, 0, sizeof(g_selectionBox));
         g_selected = NULL;
-        g_target = SDL_FALSE;
+        g_is_target_selected = SDL_FALSE;
     }
 }
 
@@ -322,10 +341,10 @@ void boardstate_render() {
     SDL_RenderDrawRects(g_renderer, g_board, BOARD_LENGTH * BOARD_LENGTH);
 
     SDL_SetRenderDrawColor(g_renderer, PC_OPAQUE_GREEN);
-    SDL_RenderFillRects(g_renderer, g_checker_rects, g_green_length);
+    SDL_RenderFillRects(g_renderer, g_checker_rects, g_score.green_length);
 
     SDL_SetRenderDrawColor(g_renderer, PC_OPAQUE_RED);
-    SDL_RenderFillRects(g_renderer, g_checker_rects + g_green_length, g_red_length);
+    SDL_RenderFillRects(g_renderer, g_checker_rects + g_score.green_length, g_score.red_length);
 
     SDL_SetRenderDrawColor(g_renderer, PC_OPAQUE_BLACK);
     SDL_RenderDrawRect(g_renderer, &g_selectionBox);

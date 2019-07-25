@@ -31,6 +31,7 @@ set(SOURCES
     src/Gamestate.c
     src/states/Boardstate.c
     src/states/Pausestate.c
+    src/states/Gameoverstate.c
     src/States.c
     src/convert.c
 )

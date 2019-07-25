@@ -20,20 +20,12 @@ SDL_Rect quad;
 
 SDL_bool pausestate_load(void) {
     font = TTF_OpenFont("assets/consola.ttf", 32);
-    if (!font) {
+    if ( !font ) {
         perror(TTF_GetError());
         return SDL_FALSE;
     }
-    ptext = convert_from_texture(g_renderer,
-        TTF_RenderText_Solid(font, "Paused",
-        (SDL_Color) {
-            .r = 0x00,
-            .g = 0x00,
-            .b = 0x00,
-            .a = 0xff
-        })
-    );
 
+    ptext = GT_LOAD_BLACK_TEXT("Paused", font);
     if ( !ptext ) {
         perror(SDL_GetError());
         return SDL_FALSE;
