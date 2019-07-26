@@ -1,5 +1,6 @@
 
 #include "Gameoverstate.h"
+#include "sdl2/SDL.h"
 #include "sdl2/SDL_ttf.h"
 #include "Convert.h"
 #include "Shared.h"
@@ -9,18 +10,14 @@
 extern SDL_Renderer *g_renderer;
 extern SDL_bool g_is_playing;
 extern struct gt_Gamestate_Machine g_statemachine;
+extern int g_playingColor;
 
 extern const int SCREEN_WIDTH;
 extern const int SCREEN_HEIGHT;
 
 TTF_Font *font;
-
-struct Text {
-    SDL_Texture *texture;
-    SDL_Rect position;
-};
-
-struct Text text[2];
+SDL_Texture *texture[2];
+SDL_Rect position[2];
 
 SDL_bool gameoverstate_load(void) {
     font = TTF_OpenFont("assets/consola.ttf", 32);
@@ -31,25 +28,36 @@ SDL_bool gameoverstate_load(void) {
         return SDL_FALSE;
     }
 
-    text[0].texture = GT_LOAD_BLACK_TEXT("Gameover", font);
-    if (!text[0].texture)
+    texture[0] = GT_LOAD_BLACK_TEXT("Gameover", font);
+    if (!texture[0])
         goto sdl_error_state;
 
-    SDL_QueryTexture(text[0].texture, NULL, NULL, &w, &h);
-    text[0].position.x = SCREEN_WIDTH / 2;
-    text[0].position.y = SCREEN_HEIGHT / 2;
-    text[0].position.h = h;
-    text[0].position.w = w;
+    SDL_QueryTexture(texture[0], NULL, NULL, &w, &h);
+    position[0].x = SCREEN_WIDTH / 2 - (w / 2);
+    position[0].y = SCREEN_HEIGHT / 2;
+    position[0].h = h;
+    position[0].w = w;
 
-    text[1].texture = GT_LOAD_BLACK_TEXT("SOMEBODY WON", font);
-    if (!text[1].texture)
+    SDL_Surface *surface;
+    SDL_Texture *text;
+    if (g_playingColor == 0) {
+        surface = TTF_RenderText_Solid(font, "Green won!", (SDL_Color){PC_OPAQUE_GREEN});
+        text = convert_to_texture(g_renderer, surface);
+    } else {
+        surface = TTF_RenderText_Solid(font, "Red won!", (SDL_Color){PC_OPAQUE_RED});
+        text = convert_to_texture(g_renderer, surface);
+    }
+
+    if (!text)
         goto sdl_error_state;
 
-    SDL_QueryTexture(text[1].texture, NULL, NULL, &w, &h);
-    text[1].position.x = SCREEN_WIDTH / 2;
-    text[1].position.y = SCREEN_HEIGHT / 2 + (h + 4);
-    text[1].position.h = h;
-    text[1].position.w = w;
+    texture[1] = text;
+
+    SDL_QueryTexture(text, NULL, NULL, &w, &h);
+    position[1].x = SCREEN_WIDTH / 2 - (w / 2);
+    position[1].y = SCREEN_HEIGHT / 2 + (h + 4);
+    position[1].h = h;
+    position[1].w = w;
 
     return SDL_TRUE;
 
@@ -59,16 +67,16 @@ sdl_error_state:
 }
 
 void gameoverstate_unload(void) {
-    SDL_DestroyTexture(text[0].texture);
-    SDL_DestroyTexture(text[1].texture);
+    SDL_DestroyTexture(texture[0]);
+    SDL_DestroyTexture(texture[1]);
 }
 
 void gameoverstate_render(void) {
     SDL_SetRenderDrawColor(g_renderer, PC_OPAQUE_WHITE);
     SDL_RenderClear(g_renderer);
 
-    SDL_RenderCopy(g_renderer, text[0].texture, NULL, &text[0].position);
-    SDL_RenderCopy(g_renderer, text[1].texture, NULL, &text[1].position);
+    SDL_RenderCopy(g_renderer, texture[0], NULL, &position[0]);
+    SDL_RenderCopy(g_renderer, texture[1], NULL, &position[1]);
     SDL_RenderPresent(g_renderer);
 }
 

@@ -4,6 +4,6 @@
 
 #include "SDL.h"
 
-SDL_Texture *convert_from_texture(SDL_Renderer *renderer, SDL_Surface *surface);
+SDL_Texture *convert_to_texture(SDL_Renderer *renderer, SDL_Surface *surface);
 
 #endif

@@ -12,6 +12,6 @@
 
 #define UNUSED(x) ((void) x)
 
-#define GT_LOAD_BLACK_TEXT(text, font) convert_from_texture(g_renderer, TTF_RenderText_Solid(font, text, (SDL_Color) {PC_OPAQUE_BLACK}) )
+#define GT_LOAD_BLACK_TEXT(text, font) convert_to_texture(g_renderer, TTF_RenderText_Solid(font, text, (SDL_Color) {PC_OPAQUE_BLACK}) )
 
 #endif
