@@ -8,7 +8,6 @@
 #include "States.h"
 
 extern SDL_Renderer *g_renderer;
-extern SDL_bool g_is_playing;
 extern struct gt_Gamestate_Machine g_statemachine;
 extern int g_playingColor;
 
@@ -91,7 +90,7 @@ void gameoverstate_handleKeyState(const Uint8 *ks) {
 void gameoverstate_handleEvent(const SDL_Event *e) {
     switch (e->type) {
         case SDL_QUIT:
-            g_is_playing = SDL_FALSE;
+            gt_gsmachine_goToState(&g_statemachine, GT_END_STATE);
             break;
         default:
             break;

@@ -4,7 +4,6 @@
 #include "States.h"
 
 extern SDL_Renderer *g_renderer;
-extern SDL_bool g_is_playing;
 extern struct gt_Gamestate_Machine g_statemachine;
 
 enum board_consts {
@@ -196,7 +195,7 @@ void boardstate_handleEvent(const SDL_Event *event) {
     Uint32 mouseState;
     switch(event->type) {
         case SDL_QUIT:
-            g_is_playing = SDL_FALSE;
+            gt_gsmachine_goToState(&g_statemachine, GT_END_STATE);
             break;
         case SDL_MOUSEBUTTONDOWN:
             mouseState = SDL_GetMouseState(&g_mouse.x, &g_mouse.y);
