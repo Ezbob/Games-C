@@ -21,7 +21,6 @@ SDL_Rect position[2];
 
 SDL_bool gameoverstate_load(void) {
     font = TTF_OpenFont("assets/consola.ttf", 32);
-    int w, h;
 
     if (!font) {
         perror(TTF_GetError());
@@ -32,20 +31,21 @@ SDL_bool gameoverstate_load(void) {
     if (!texture[0])
         goto sdl_error_state;
 
-    SDL_QueryTexture(texture[0], NULL, NULL, &w, &h);
-    position[0].x = SCREEN_WIDTH / 2 - (w / 2);
+    SDL_QueryTexture(texture[0], NULL, NULL, &position[0].w, &position[0].h);
+    position[0].x = SCREEN_WIDTH / 2 - (position[0].w / 2);
     position[0].y = SCREEN_HEIGHT / 2;
-    position[0].h = h;
-    position[0].w = w;
 
-    SDL_Surface *surface;
     SDL_Texture *text;
     if (g_playingColor == 0) {
-        surface = TTF_RenderText_Solid(font, "Green won!", (SDL_Color){PC_OPAQUE_GREEN});
-        text = convert_to_texture(g_renderer, surface);
+        text = convert_to_texture(
+            g_renderer,
+            TTF_RenderText_Solid(font, "Green won!", (SDL_Color){PC_OPAQUE_GREEN})
+        );
     } else {
-        surface = TTF_RenderText_Solid(font, "Red won!", (SDL_Color){PC_OPAQUE_RED});
-        text = convert_to_texture(g_renderer, surface);
+        text = convert_to_texture(
+            g_renderer, 
+            TTF_RenderText_Solid(font, "Red won!", (SDL_Color){PC_OPAQUE_RED})
+        );
     }
 
     if (!text)
@@ -53,11 +53,9 @@ SDL_bool gameoverstate_load(void) {
 
     texture[1] = text;
 
-    SDL_QueryTexture(text, NULL, NULL, &w, &h);
-    position[1].x = SCREEN_WIDTH / 2 - (w / 2);
-    position[1].y = SCREEN_HEIGHT / 2 + (h + 4);
-    position[1].h = h;
-    position[1].w = w;
+    SDL_QueryTexture(text, NULL, NULL, &position[1].w, &position[1].h);
+    position[1].x = SCREEN_WIDTH / 2 - (position[1].w / 2);
+    position[1].y = SCREEN_HEIGHT / 2 + (position[1].h + 4);
 
     return SDL_TRUE;
 
