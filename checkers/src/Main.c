@@ -26,7 +26,7 @@ struct gt_Gamestate_Machine g_statemachine;
 
 void initGlobalData() {
     gt_gameclock_init(&g_gameclock, MS_PER_UPDATE);
-    gt_gsmachine_init(&g_statemachine, gt_gamestates);
+    gt_gsmachine_init(&g_statemachine, &g_gameclock, gt_gamestates);
 }
 
 void unloadData(struct gt_Gamestate_Machine *m) {
@@ -77,36 +77,15 @@ int MAIN_NAME(int argc, char *argv[])
 
     initGlobalData();
 
-    struct gt_Gamestate *state = gt_gsmachine_advanceState(&g_statemachine);
+    int exitcode = gt_gsmachine_runloop(&g_statemachine);
 
-    if ( state == GT_STATE_ARRAY_END ) {
-        perror("No valid start game state");
-        goto initialized_failure;
-    }
-
-    while ( g_is_playing && state != GT_STATE_ARRAY_END ) {
-
-        if ( !state->isLoaded && !(state->isLoaded = state->load()) ) {
-            perror("Could not initialize state");
+    switch (exitcode) {
+        case 1:
+            goto initialized_failure;
+        case 2:
             goto unload_initialized_failure;
-        }
-
-        while ( g_is_playing && !g_statemachine.shouldSkip ) {
-
-            gt_gstate_pump_events(state);
-
-            while ( GT_CLOCK_SHOULD_UPDATE(g_gameclock) ) {
-                state->update();
-
-                GT_CLOCK_LAG_UPDATE(g_gameclock);
-            }
-
-            state->render();
-
-            GT_CLOCK_TICK(g_gameclock);
-        }
-
-        state = gt_gsmachine_setupSkip(&g_statemachine);
+        default:
+            break;
     }
 
     unloadData(&g_statemachine);
