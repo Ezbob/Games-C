@@ -11,9 +11,6 @@ extern SDL_Renderer *g_renderer;
 extern struct gt_Gamestate_Machine g_statemachine;
 extern int g_playingColor;
 
-extern const int SCREEN_WIDTH;
-extern const int SCREEN_HEIGHT;
-
 TTF_Font *font;
 SDL_Texture *texture[2];
 SDL_Rect position[2];

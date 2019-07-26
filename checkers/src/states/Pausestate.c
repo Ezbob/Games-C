@@ -10,9 +10,6 @@
 extern SDL_Renderer *g_renderer;
 extern struct gt_Gamestate_Machine g_statemachine;
 
-extern const int SCREEN_WIDTH;
-extern const int SCREEN_HEIGHT;
-
 SDL_Texture *ptext;
 TTF_Font *font;
 SDL_Rect quad;
