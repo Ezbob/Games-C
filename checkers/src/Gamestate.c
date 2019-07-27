@@ -2,11 +2,12 @@
 #include "Gamestate.h"
 
 SDL_bool gt_gsmachine_init(struct gt_Gamestate_Machine *machine, struct gt_Gameclock *clock,
-                           struct gt_Gamestate **states) {
+                           struct gt_Gamestate **states, int nstates) {
     machine->clock = clock;
     machine->currentState = 0;
     machine->states = states;
     machine->shouldRun = SDL_TRUE;
+    machine->numberOfState = nstates;
     return SDL_TRUE;
 }
 
@@ -15,7 +16,14 @@ void gt_gsmachine_goToState(struct gt_Gamestate_Machine *m, int i) {
     m->shouldRun = SDL_FALSE;
 }
 
-int gt_gsmachine_runloop(struct gt_Gamestate_Machine *machine) {
+void gt_gsmachine_unloadAll(struct gt_Gamestate_Machine *machine) {
+    for (int i = 0; i < (machine->numberOfState - 1); ++i) {
+        struct gt_Gamestate *state = machine->states[i];
+        if (state->isLoaded) state->unload();
+    }
+}
+
+int gt_gsmachine_runLoop(struct gt_Gamestate_Machine *machine) {
     struct gt_Gamestate *state = machine->states[machine->currentState];
     SDL_Event inputEvent;
 

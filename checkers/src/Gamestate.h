@@ -35,6 +35,7 @@ struct gt_Gamestate_Machine {
     SDL_bool shouldRun;
     struct gt_Gameclock *clock;
     struct gt_Gamestate **states;
+    int numberOfState;
     int currentState;
 };
 
@@ -45,7 +46,7 @@ struct gt_Gamestate_Machine {
  * ordering and available game states.
  */
 SDL_bool gt_gsmachine_init(struct gt_Gamestate_Machine *m, struct gt_Gameclock *c,
-                           struct gt_Gamestate **s);
+                           struct gt_Gamestate **s, int nstates);
 
 /**
  * Go to a gamestate by index. Sets the skip flag such that the gamestate runtime
@@ -56,6 +57,11 @@ void gt_gsmachine_goToState(struct gt_Gamestate_Machine *m, int i);
 /**
  * Runs the actual gameloop
  */
-int gt_gsmachine_runloop(struct gt_Gamestate_Machine *m);
+int gt_gsmachine_runLoop(struct gt_Gamestate_Machine *m);
+
+/**
+ * Runs the unload function for all states
+ */
+void gt_gsmachine_unloadAll(struct gt_Gamestate_Machine *m);
 
 #endif
