@@ -29,15 +29,18 @@ void initGlobalData() {
 }
 
 SDL_bool sdlInit() {
-    if ( SDL_CreateWindowAndRenderer(SCREEN_WIDTH, SCREEN_HEIGHT,
-                                     SDL_WINDOW_SHOWN, &g_window, &g_renderer) == -1 )
-        goto error_label;
+    if ( !(g_window = SDL_CreateWindow(g_window_title, SDL_WINDOWPOS_UNDEFINED,
+        SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN)) )
+        goto sdl_error;
+
+    if ( !(g_renderer = SDL_CreateRenderer(g_window, -1, SDL_RENDERER_ACCELERATED)) )
+        goto sdl_error;
 
     if ( SDL_SetRenderDrawColor(g_renderer, PC_OPAQUE_WHITE) == -1 )
-        goto error_label;
+        goto sdl_error;
 
     if ( SDL_RenderClear(g_renderer) == -1 )
-        goto error_label;
+        goto sdl_error;
 
     if ( TTF_Init() == -1 ) {
         goto TTF_error;
@@ -51,7 +54,7 @@ TTF_error:
     perror(TTF_GetError());
     return SDL_FALSE;
 
-error_label:
+sdl_error:
     perror(SDL_GetError());
     return SDL_FALSE;
 }
