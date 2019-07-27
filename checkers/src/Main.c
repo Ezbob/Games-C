@@ -46,8 +46,6 @@ SDL_bool sdlInit() {
         goto TTF_error;
     }
 
-    SDL_SetWindowTitle(g_window, g_window_title);
-
     return SDL_TRUE;
 
 TTF_error:
