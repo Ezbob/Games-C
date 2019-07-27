@@ -33,7 +33,7 @@ set(SOURCES
     src/states/Pausestate.c
     src/states/Gameoverstate.c
     src/States.c
-    src/convert.c
+    src/Convert.c
 )
 
 set(INCLUDE_DIRS
