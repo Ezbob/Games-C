@@ -2,7 +2,7 @@
 #ifndef _HEADER_FILE_Pausestate_20190722214505_
 #define _HEADER_FILE_Pausestate_20190722214505_
 
-#include "sdl2/SDL.h"
+#include "SDL.h"
 
 SDL_bool pausestate_load(void);
 void pausestate_render(void);

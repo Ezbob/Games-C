@@ -1,7 +1,6 @@
 
 #include "Gameoverstate.h"
-#include "sdl2/SDL.h"
-#include "sdl2/SDL_ttf.h"
+#include "SDL_ttf.h"
 #include "Convert.h"
 #include "Constants.h"
 #include "Macros.h"

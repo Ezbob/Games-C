@@ -12,7 +12,7 @@
 #ifndef _HEADER_FILE_Gamestate_20190718184924_
 #define _HEADER_FILE_Gamestate_20190718184924_
 
-#include "sdl2/SDL.h"
+#include "SDL.h"
 #include "Gameclock.h"
 
 /**

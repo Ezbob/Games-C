@@ -2,7 +2,7 @@
 #ifndef _HEADER_FILE_Gameoverstate_20190725190201_
 #define _HEADER_FILE_Gameoverstate_20190725190201_
 
-#include "sdl2/SDL.h"
+#include "SDL.h"
 
 SDL_bool gameoverstate_load(void);
 void gameoverstate_render(void);
