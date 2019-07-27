@@ -6,7 +6,7 @@
 #include "Gamestate.h"
 #include "States.h"
 #include "SDL_ttf.h"
-#include "Shared.h"
+#include "Constants.h"
 
 #if defined(_WIN32)
     #define MAIN_NAME WinMain

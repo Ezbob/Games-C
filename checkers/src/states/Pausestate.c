@@ -5,7 +5,7 @@
 #include "States.h"
 #include "SDL_ttf.h"
 #include "Convert.h"
-#include "Shared.h"
+#include "Constants.h"
 
 extern SDL_Renderer *g_renderer;
 extern struct gt_Gamestate_Machine g_statemachine;
