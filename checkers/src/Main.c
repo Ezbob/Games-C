@@ -40,12 +40,16 @@ SDL_bool sdlInit() {
         goto error_label;
 
     if ( TTF_Init() == -1 ) {
-        goto error_label;
+        goto TTF_error;
     }
 
     SDL_SetWindowTitle(g_window, g_window_title);
 
     return SDL_TRUE;
+
+TTF_error:
+    perror(TTF_GetError());
+    return SDL_FALSE;
 
 error_label:
     perror(SDL_GetError());
@@ -69,9 +73,7 @@ int MAIN_NAME(int argc, char *argv[])
 
     initGlobalData();
 
-    int exitcode = gt_gsmachine_runLoop(&g_statemachine);
-
-    switch (exitcode) {
+    switch (gt_gsmachine_runLoop(&g_statemachine)) {
         case 1:
             goto initialized_failure;
         case 2:
