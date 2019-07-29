@@ -12,6 +12,7 @@ enum board_consts {
 };
 
 static const int checkerLength = 60;
+static const int containerLength = 100;
 
 enum PlayingColor {
     GREEN,
@@ -229,10 +230,10 @@ SDL_bool boardstate_load() {
             SDL_Rect *container = g_board + flatIndex;
             struct Cell *cell = g_cellboard + flatIndex;
 
-            container->h = 100;
-            container->w = 100;
-            container->x = 100 * (flatIndex % BOARD_LENGTH) + 20;
-            container->y = 100 * (flatIndex / BOARD_LENGTH) + 20;
+            container->h = containerLength;
+            container->w = containerLength;
+            container->x = containerLength * (flatIndex % BOARD_LENGTH) + 20;
+            container->y = containerLength * (flatIndex / BOARD_LENGTH) + 20;
 
             cell->container = container;
             cell->columnIndex = j;
@@ -244,7 +245,7 @@ SDL_bool boardstate_load() {
                     struct Checker *checker = g_checkers + (g_score.green_length);
                     SDL_Rect *rect = g_checker_rects + (g_score.green_length++);
 
-                    rect->x = (100 * (j % BOARD_LENGTH)) + 40;
+                    rect->x = (containerLength * (j % BOARD_LENGTH)) + 40;
                     rect->y = (container->y + 20);
                     rect->w = checkerLength;
                     rect->h = checkerLength;
@@ -254,12 +255,12 @@ SDL_bool boardstate_load() {
                     cell->occubant = checker;
                     continue;
                 }
-            } else if ( i % 2 != 0 && i < (BOARD_LENGTH / 2) - 1) {
+            } else if ( i % 2 != 0 && i < (BOARD_LENGTH / 2) - 1 ) {
                 if (j % 2 != 0) {
                     struct Checker *checker = g_checkers + (g_score.green_length);
                     SDL_Rect *rect = g_checker_rects + (g_score.green_length++);
 
-                    rect->x = (100 * (j % BOARD_LENGTH)) + 40;
+                    rect->x = (containerLength * (j % BOARD_LENGTH)) + 40;
                     rect->y = (container->y + 20);
                     rect->w = checkerLength;
                     rect->h = checkerLength;
@@ -279,7 +280,7 @@ SDL_bool boardstate_load() {
                     SDL_Rect *rect = g_checker_rects + currentIndex;
                     g_score.red_length++;
 
-                    rect->x = (100 * (j % BOARD_LENGTH)) + 40;
+                    rect->x = (containerLength * (j % BOARD_LENGTH)) + 40;
                     rect->y = (container->y + 20);
                     rect->w = checkerLength;
                     rect->h = checkerLength;
@@ -296,7 +297,7 @@ SDL_bool boardstate_load() {
                     SDL_Rect *rect = g_checker_rects + currentIndex;
                     g_score.red_length++;
 
-                    rect->x = (100 * (j % BOARD_LENGTH)) + 40;
+                    rect->x = (containerLength * (j % BOARD_LENGTH)) + 40;
                     rect->y = (container->y + 20);
                     rect->w = checkerLength;
                     rect->h = checkerLength;
