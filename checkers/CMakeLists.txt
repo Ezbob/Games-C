@@ -34,6 +34,7 @@ set(SOURCES
     src/states/Gameoverstate.c
     src/States.c
     src/Convert.c
+    src/Tweening.c
 )
 
 set(INCLUDE_DIRS

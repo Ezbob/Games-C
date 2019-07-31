@@ -2,6 +2,7 @@
 #include "Boardstate.h"
 #include "Macros.h"
 #include "States.h"
+#include "Tweening.h"
 
 extern SDL_Renderer *g_renderer;
 extern struct gt_Gamestate_Machine g_statemachine;
@@ -96,8 +97,8 @@ void switchTurn() {
 void doMoveToEmpty(struct Cell *target) {
     struct Checker *source = g_selected->occubant;
 
-    source->rect->x = target->container->x + 20;
-    source->rect->y = target->container->y + 20;
+    source->next.x = target->container->x + 20;
+    source->next.y = target->container->y + 20;
 
     switchTurn();
 
@@ -108,8 +109,8 @@ void doMoveToEmpty(struct Cell *target) {
 void doOvertake(struct Cell *taken, struct Cell *target) {
     struct Checker *source = g_selected->occubant;
 
-    source->rect->x = target->container->x + 20;
-    source->rect->y = target->container->y + 20;
+    source->next.x = target->container->x + 20;
+    source->next.y = target->container->y + 20;
 
     if (taken->occubant->color == GREEN) {
         g_score.green_remaining--;
@@ -221,6 +222,25 @@ void boardstate_handleKeyState(const Uint8 *states) {
 
 void boardstate_unload(void) {}
 
+void init_checker_pos(struct Checker *checker, SDL_Rect *rect,
+    int x, int y, int w, int h, enum PlayingColor color) {
+    rect->x = x;
+    rect->y = y;
+    rect->w = w;
+    rect->h = h;
+
+    /* Next tweening position is
+        initially the same as the
+        start */
+    checker->next.x = rect->x;
+    checker->next.y = rect->y;
+    checker->next.w = rect->w;
+    checker->next.h = rect->h;
+
+    checker->color = color;
+    checker->rect = rect;
+}
+
 SDL_bool boardstate_load() {
     for (int i = 0; i < BOARD_LENGTH; ++i) {
         for (int j = 0; j < BOARD_LENGTH; ++j) {
@@ -239,19 +259,22 @@ SDL_bool boardstate_load() {
             cell->columnIndex = j;
             cell->rowIndex = i;
 
+            /** Checkers initialization **/
+
             /** GREEN **/
             if ( i % 2 == 0 && i < (BOARD_LENGTH / 2) ) {
                 if (j % 2 == 0) {
                     struct Checker *checker = g_checkers + (g_score.green_length);
                     SDL_Rect *rect = g_checker_rects + (g_score.green_length++);
 
-                    rect->x = (containerLength * (j % BOARD_LENGTH)) + 40;
-                    rect->y = (container->y + 20);
-                    rect->w = checkerLength;
-                    rect->h = checkerLength;
+                    init_checker_pos(checker, rect,
+                        (containerLength * (j % BOARD_LENGTH)) + 40,
+                        (container->y + 20),
+                        checkerLength,
+                        checkerLength,
+                        GREEN
+                    );
 
-                    checker->color = GREEN;
-                    checker->rect = rect;
                     cell->occubant = checker;
                     continue;
                 }
@@ -260,13 +283,14 @@ SDL_bool boardstate_load() {
                     struct Checker *checker = g_checkers + (g_score.green_length);
                     SDL_Rect *rect = g_checker_rects + (g_score.green_length++);
 
-                    rect->x = (containerLength * (j % BOARD_LENGTH)) + 40;
-                    rect->y = (container->y + 20);
-                    rect->w = checkerLength;
-                    rect->h = checkerLength;
+                    init_checker_pos(checker, rect,
+                        containerLength * (j % BOARD_LENGTH) + 40,
+                        container->y + 20,
+                        checkerLength,
+                        checkerLength,
+                        GREEN
+                    );
 
-                    checker->color = GREEN;
-                    checker->rect = rect;
                     cell->occubant = checker;
                     continue;
                 }
@@ -275,18 +299,19 @@ SDL_bool boardstate_load() {
             /** RED **/
             if ( i % 2 == 0 && i > (BOARD_LENGTH / 2) ) {
                 if (j % 2 == 0) {
-                    int currentIndex =  (g_score.green_length + g_score.red_length);
+                    int currentIndex = (g_score.green_length + g_score.red_length);
                     struct Checker *checker = g_checkers + currentIndex;
                     SDL_Rect *rect = g_checker_rects + currentIndex;
                     g_score.red_length++;
 
-                    rect->x = (containerLength * (j % BOARD_LENGTH)) + 40;
-                    rect->y = (container->y + 20);
-                    rect->w = checkerLength;
-                    rect->h = checkerLength;
+                    init_checker_pos(checker, rect,
+                        containerLength * (j % BOARD_LENGTH) + 40,
+                        container->y + 20,
+                        checkerLength,
+                        checkerLength,
+                        RED
+                    );
 
-                    checker->color = RED;
-                    checker->rect = rect;
                     cell->occubant = checker;
                     continue;
                 }
@@ -297,13 +322,14 @@ SDL_bool boardstate_load() {
                     SDL_Rect *rect = g_checker_rects + currentIndex;
                     g_score.red_length++;
 
-                    rect->x = (containerLength * (j % BOARD_LENGTH)) + 40;
-                    rect->y = (container->y + 20);
-                    rect->w = checkerLength;
-                    rect->h = checkerLength;
+                    init_checker_pos(checker, rect,
+                        containerLength * (j % BOARD_LENGTH) + 40,
+                        container->y + 20,
+                        checkerLength,
+                        checkerLength,
+                        RED
+                    );
 
-                    checker->color = RED;
-                    checker->rect = rect;
                     cell->occubant = checker;
                     continue;
                 }
@@ -318,7 +344,6 @@ SDL_bool boardstate_load() {
 }
 
 void boardstate_update() {
-
     if (g_score.red_remaining == 0 || g_score.green_remaining == 0) {
         gt_gsmachine_goToState(&g_statemachine, GT_GAME_OVER_STATE);
         return;
@@ -330,6 +355,12 @@ void boardstate_update() {
         memset(&g_selectionBox, 0, sizeof(g_selectionBox));
         g_selected = NULL;
         g_is_target_selected = SDL_FALSE;
+    }
+
+    for (int i = 0; i < (g_score.green_length + g_score.red_length); i++)
+    {
+        struct Checker *c = g_checkers + i;
+        lerp(c->rect, &c->next, 0.25);
     }
 }
 
