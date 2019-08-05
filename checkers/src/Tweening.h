@@ -4,6 +4,6 @@
 
 #include "SDL.h"
 
-void lerp(SDL_Rect * out, const SDL_Rect *r, double d);
+void lerp(SDL_Rect * out, const SDL_Rect *start, const SDL_Rect *end, double f);
 
 #endif

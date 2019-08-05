@@ -3,6 +3,7 @@
 #include "Macros.h"
 #include "States.h"
 #include "Tweening.h"
+#include "Animation.h"
 
 extern SDL_Renderer *g_renderer;
 extern struct gt_Gamestate_Machine g_statemachine;
@@ -22,6 +23,7 @@ enum PlayingColor {
 
 struct Checker {
     enum PlayingColor color;
+    struct gt_animation anim;
     SDL_Rect *rect; // the actual rendered rect
     SDL_Rect next; // the next point in the lerp
 };
@@ -58,10 +60,6 @@ void printCell(const struct Cell * c) {
     printf("CELL(%p\t%p)\n", c->container, c->occubant);
 }
 
-void printRect(const SDL_Rect * r) {
-    printf("RECT(x: %i, y: %i, w: %i, h: %i)\n", r->x, r->y, r->w, r->h);
-}
-
 void findSelected() {
     for (int i = 0; i < BOARD_LENGTH; i++) {
         for (int j = 0; j < BOARD_LENGTH; ++j) {
@@ -86,6 +84,12 @@ void findSelected() {
     }
 }
 
+void moveChecker(struct Checker *checker, int x, int y) {
+    checker->next.x = x;
+    checker->next.y = y;
+    gt_animation_start(&checker->anim);
+}
+
 void switchTurn() {
     if (g_playingColor == GREEN) {
         g_playingColor = RED;
@@ -97,8 +101,7 @@ void switchTurn() {
 void doMoveToEmpty(struct Cell *target) {
     struct Checker *source = g_selected->occubant;
 
-    source->next.x = target->container->x + 20;
-    source->next.y = target->container->y + 20;
+    moveChecker(source, target->container->x + 20, target->container->y + 20);
 
     switchTurn();
 
@@ -109,8 +112,7 @@ void doMoveToEmpty(struct Cell *target) {
 void doOvertake(struct Cell *taken, struct Cell *target) {
     struct Checker *source = g_selected->occubant;
 
-    source->next.x = target->container->x + 20;
-    source->next.y = target->container->y + 20;
+    moveChecker(source, target->container->x + 20, target->container->y + 20);
 
     if (taken->occubant->color == GREEN) {
         g_score.green_remaining--;
@@ -192,7 +194,6 @@ void updateSelected() {
 /*
  * External state api
  */
-
 void boardstate_handleEvent(const SDL_Event *event) {
     Uint32 mouseState;
     switch(event->type) {
@@ -239,6 +240,8 @@ void init_checker_pos(struct Checker *checker, SDL_Rect *rect,
 
     checker->color = color;
     checker->rect = rect;
+
+    gt_animation_init(&checker->anim, 2000);
 }
 
 SDL_bool boardstate_load() {
@@ -344,6 +347,7 @@ SDL_bool boardstate_load() {
 }
 
 void boardstate_update() {
+    int ticks = SDL_GetTicks();
     if (g_score.red_remaining == 0 || g_score.green_remaining == 0) {
         gt_gsmachine_goToState(&g_statemachine, GT_GAME_OVER_STATE);
         return;
@@ -360,7 +364,11 @@ void boardstate_update() {
     for (int i = 0; i < (g_score.green_length + g_score.red_length); i++)
     {
         struct Checker *c = g_checkers + i;
-        lerp(c->rect, &c->next, 0.25);
+        gt_animation_tick(&c->anim, ticks);
+        if ( c->anim.isRunning ) {
+            double factor = ((double) (ticks - c->anim.startTick) / c->anim.duration);
+            lerp(c->rect, c->rect, &c->next, factor);
+        }
     }
 }
 
