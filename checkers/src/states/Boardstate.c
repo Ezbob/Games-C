@@ -241,7 +241,7 @@ void init_checker_pos(struct Checker *checker, SDL_Rect *rect,
     checker->color = color;
     checker->rect = rect;
 
-    gt_animation_init(&checker->anim, 2000);
+    gt_animation_init(&checker->anim, 1500, NULL, (void *) NULL);
 }
 
 SDL_bool boardstate_load() {
@@ -347,13 +347,13 @@ SDL_bool boardstate_load() {
 }
 
 void boardstate_update() {
-    int ticks = SDL_GetTicks();
-    if (g_score.red_remaining == 0 || g_score.green_remaining == 0) {
+    Uint32 ticks = SDL_GetTicks();
+    if ( g_score.red_remaining == 0 || g_score.green_remaining == 0 ) {
         gt_gsmachine_goToState(&g_statemachine, GT_GAME_OVER_STATE);
         return;
     }
 
-    if (g_selected != NULL && g_is_target_selected == SDL_TRUE) {
+    if ( g_selected != NULL && g_is_target_selected == SDL_TRUE ) {
         updateSelected();
 
         memset(&g_selectionBox, 0, sizeof(g_selectionBox));
@@ -361,14 +361,13 @@ void boardstate_update() {
         g_is_target_selected = SDL_FALSE;
     }
 
-    for (int i = 0; i < (g_score.green_length + g_score.red_length); i++)
-    {
+    for ( int i = 0; i < (g_score.green_length + g_score.red_length); i++ ) {
         struct Checker *c = g_checkers + i;
-        gt_animation_tick(&c->anim, ticks);
         if ( c->anim.isRunning ) {
             double factor = ((double) (ticks - c->anim.startTick) / c->anim.duration);
             lerp(c->rect, c->rect, &c->next, factor);
         }
+        gt_animation_tick(&c->anim, ticks);
     }
 }
 
