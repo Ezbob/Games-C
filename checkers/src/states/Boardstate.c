@@ -142,7 +142,7 @@ SDL_bool tryToOvertake(struct Cell *clickedGridCell, int xOffset, int yOffset) {
         return SDL_FALSE;
     }
 
-    if ( 0 <= nextNextIndex && nextNextIndex < BOARD_LENGTH * BOARD_LENGTH ) {
+    if ( 0 <= nextNextIndex && nextNextIndex < BOARD_SIZE ) {
         struct Cell *nextNextCell = g_cellboard + nextNextIndex;
         if ( nextNextCell->occubant == NULL) {
             doOvertake(clickedGridCell, nextNextCell);
@@ -158,7 +158,7 @@ SDL_bool tryToMove(int xOffset, int yOffset) {
     int xdiff = g_selected->columnIndex + xOffset;
     int nextIndex = ydiff * BOARD_LENGTH + xdiff;
 
-    if ( 0 <= nextIndex && nextIndex < (BOARD_LENGTH * BOARD_LENGTH) ) {
+    if ( 0 <= nextIndex && nextIndex < BOARD_SIZE ) {
         struct Cell *gridCell = g_cellboard + nextIndex;
 
         if (
@@ -191,9 +191,30 @@ void updateSelected() {
     if ( tryToMove(-1, -1) ) return;
 }
 
-void checkAnimationUpdate(double remaining, void *data) {
+void checkerAnimationUpdate(double remaining, void *data) {
     struct Checker *checker = (struct Checker *) data;
     lerp(checker->rect, checker->rect, &checker->next, remaining);
+}
+
+void initCheckerPosition(struct Checker *checker, SDL_Rect *rect,
+    int x, int y, int w, int h, enum PlayingColor color) {
+    rect->x = x;
+    rect->y = y;
+    rect->w = w;
+    rect->h = h;
+
+    /* Next tweening position is
+        initially the same as the
+        start */
+    checker->next.x = rect->x;
+    checker->next.y = rect->y;
+    checker->next.w = rect->w;
+    checker->next.h = rect->h;
+
+    checker->color = color;
+    checker->rect = rect;
+
+    gt_animation_init(&checker->anim, 1500, checkerAnimationUpdate, (void *) checker);
 }
 
 /*
@@ -228,27 +249,6 @@ void boardstate_handleKeyState(const Uint8 *states) {
 
 void boardstate_unload(void) {}
 
-void init_checker_pos(struct Checker *checker, SDL_Rect *rect,
-    int x, int y, int w, int h, enum PlayingColor color) {
-    rect->x = x;
-    rect->y = y;
-    rect->w = w;
-    rect->h = h;
-
-    /* Next tweening position is
-        initially the same as the
-        start */
-    checker->next.x = rect->x;
-    checker->next.y = rect->y;
-    checker->next.w = rect->w;
-    checker->next.h = rect->h;
-
-    checker->color = color;
-    checker->rect = rect;
-
-    gt_animation_init(&checker->anim, 1500, checkAnimationUpdate, (void *) checker);
-}
-
 SDL_bool boardstate_load() {
     for (int i = 0; i < BOARD_LENGTH; ++i) {
         for (int j = 0; j < BOARD_LENGTH; ++j) {
@@ -275,7 +275,7 @@ SDL_bool boardstate_load() {
                     struct Checker *checker = g_checkers + (g_score.green_length);
                     SDL_Rect *rect = g_checker_rects + (g_score.green_length++);
 
-                    init_checker_pos(checker, rect,
+                    initCheckerPosition(checker, rect,
                         (containerLength * (j % BOARD_LENGTH)) + 40,
                         (container->y + 20),
                         checkerLength,
@@ -291,7 +291,7 @@ SDL_bool boardstate_load() {
                     struct Checker *checker = g_checkers + (g_score.green_length);
                     SDL_Rect *rect = g_checker_rects + (g_score.green_length++);
 
-                    init_checker_pos(checker, rect,
+                    initCheckerPosition(checker, rect,
                         containerLength * (j % BOARD_LENGTH) + 40,
                         container->y + 20,
                         checkerLength,
@@ -312,7 +312,7 @@ SDL_bool boardstate_load() {
                     SDL_Rect *rect = g_checker_rects + currentIndex;
                     g_score.red_length++;
 
-                    init_checker_pos(checker, rect,
+                    initCheckerPosition(checker, rect,
                         containerLength * (j % BOARD_LENGTH) + 40,
                         container->y + 20,
                         checkerLength,
@@ -330,7 +330,7 @@ SDL_bool boardstate_load() {
                     SDL_Rect *rect = g_checker_rects + currentIndex;
                     g_score.red_length++;
 
-                    init_checker_pos(checker, rect,
+                    initCheckerPosition(checker, rect,
                         containerLength * (j % BOARD_LENGTH) + 40,
                         container->y + 20,
                         checkerLength,
