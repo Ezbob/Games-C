@@ -191,6 +191,11 @@ void updateSelected() {
     if ( tryToMove(-1, -1) ) return;
 }
 
+void checkAnimationUpdate(double remaining, void *data) {
+    struct Checker *checker = (struct Checker *) data;
+    lerp(checker->rect, checker->rect, &checker->next, remaining);
+}
+
 /*
  * External state api
  */
@@ -241,7 +246,7 @@ void init_checker_pos(struct Checker *checker, SDL_Rect *rect,
     checker->color = color;
     checker->rect = rect;
 
-    gt_animation_init(&checker->anim, 1500, NULL, (void *) NULL);
+    gt_animation_init(&checker->anim, 1500, checkAnimationUpdate, (void *) checker);
 }
 
 SDL_bool boardstate_load() {
@@ -363,10 +368,6 @@ void boardstate_update() {
 
     for ( int i = 0; i < (g_score.green_length + g_score.red_length); i++ ) {
         struct Checker *c = g_checkers + i;
-        if ( c->anim.isRunning ) {
-            double factor = ((double) (ticks - c->anim.startTick) / c->anim.duration);
-            lerp(c->rect, c->rect, &c->next, factor);
-        }
         gt_animation_tick(&c->anim, ticks);
     }
 }
