@@ -376,6 +376,56 @@ void boardstate_render() {
     SDL_SetRenderDrawColor(g_renderer, PC_OPAQUE_WHITE);
     SDL_RenderClear(g_renderer);
 
+    if ( g_selected != NULL ) {
+        int nextRow = g_selected->rowIndex + 1;
+        int nextColumn = g_selected->columnIndex + 1;
+        int prevRow = g_selected->rowIndex - 1;
+        int prevColumn = g_selected->columnIndex - 1;
+        if ( 0 < nextRow && nextRow < BOARD_LENGTH && 0 < nextColumn && nextColumn < BOARD_LENGTH ) {
+            struct Cell *gridCell = g_cellboard + (nextRow * BOARD_LENGTH + nextColumn);
+            if (gridCell->occubant == NULL ||
+                gridCell->occubant->color != g_selected->occubant->color) {
+                SDL_SetRenderDrawColor(g_renderer, 0x00, 0x7f, 0xff, 0xff);
+            } else {
+                SDL_SetRenderDrawColor(g_renderer, 0x54, 0x54,0x54, 0xff);
+            }
+            SDL_RenderFillRect(g_renderer, gridCell->container);
+        }
+
+        if ( 0 < nextRow && nextRow < BOARD_LENGTH && 0 < prevColumn && prevColumn < BOARD_LENGTH ) {
+            struct Cell *gridCell = g_cellboard + (nextRow * BOARD_LENGTH + prevColumn);
+            if (gridCell->occubant == NULL ||
+                gridCell->occubant->color != g_selected->occubant->color) {
+                SDL_SetRenderDrawColor(g_renderer, 0x00, 0x7f, 0xff, 0xff);
+            } else {
+                SDL_SetRenderDrawColor(g_renderer, 0x54, 0x54,0x54, 0xff);
+            }
+            SDL_RenderFillRect(g_renderer, gridCell->container);
+        }
+
+        if ( 0 < prevRow && prevRow < BOARD_LENGTH && 0 < nextColumn && nextColumn < BOARD_LENGTH ) {
+            struct Cell *gridCell = g_cellboard + (prevRow * BOARD_LENGTH + nextColumn);
+            if (gridCell->occubant == NULL ||
+                gridCell->occubant->color != g_selected->occubant->color) {
+                SDL_SetRenderDrawColor(g_renderer, 0x00, 0x7f, 0xff, 0xff);
+            } else {
+                SDL_SetRenderDrawColor(g_renderer, 0x54, 0x54,0x54, 0xff);
+            }
+            SDL_RenderFillRect(g_renderer, gridCell->container);
+        }
+
+        if ( 0 < prevRow && prevRow < BOARD_LENGTH && 0 < prevColumn && prevColumn < BOARD_LENGTH ) {
+            struct Cell *gridCell = g_cellboard + (prevRow * BOARD_LENGTH + prevColumn);
+            if (gridCell->occubant == NULL ||
+                gridCell->occubant->color != g_selected->occubant->color) {
+                SDL_SetRenderDrawColor(g_renderer, 0x00, 0x7f, 0xff, 0xff);
+            } else {
+                SDL_SetRenderDrawColor(g_renderer, 0x54, 0x54,0x54, 0xff);
+            }
+            SDL_RenderFillRect(g_renderer, gridCell->container);
+        }
+    }
+
     SDL_SetRenderDrawColor(g_renderer, PC_OPAQUE_BLACK);
     SDL_RenderDrawRects(g_renderer, g_board, BOARD_LENGTH * BOARD_LENGTH);
 
