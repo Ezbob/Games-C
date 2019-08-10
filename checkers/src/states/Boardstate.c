@@ -5,6 +5,8 @@
 #include "Tweening.h"
 #include "Animation.h"
 
+#define IS_WITHIN_BOARD(x) (0 <= x && x < BOARD_LENGTH)
+
 extern SDL_Renderer *g_renderer;
 extern struct gt_Gamestate_Machine g_statemachine;
 
@@ -98,6 +100,18 @@ void switchTurn() {
     }
 }
 
+SDL_bool isSelectedCellWithinBoundaries(int xdiff, int ydiff, int nextIndex) {
+    if (
+        ( 0 > nextIndex || nextIndex >= BOARD_SIZE ) ||
+        ( g_selected == NULL ) ||
+        ( !IS_WITHIN_BOARD(xdiff) || !IS_WITHIN_BOARD(ydiff) )
+    ) {
+        return SDL_FALSE;
+    }
+
+    return SDL_TRUE;
+}
+
 void doMoveToEmpty(struct Cell *target) {
     struct Checker *source = g_selected->occubant;
 
@@ -133,21 +147,14 @@ SDL_bool tryToOvertake(struct Cell *clickedGridCell, int xOffset, int yOffset) {
     int x2diff = g_selected->columnIndex + (xOffset * 2);
     int nextNextIndex = y2diff * BOARD_LENGTH + x2diff;
 
-    if (
-        x2diff < 0 ||
-        x2diff >= BOARD_LENGTH ||
-        y2diff < 0 ||
-        y2diff >= BOARD_LENGTH
-    ) {
+    if ( !isSelectedCellWithinBoundaries(x2diff, y2diff, nextNextIndex) ) {
         return SDL_FALSE;
     }
 
-    if ( 0 <= nextNextIndex && nextNextIndex < BOARD_SIZE ) {
-        struct Cell *nextNextCell = g_cellboard + nextNextIndex;
-        if ( nextNextCell->occubant == NULL) {
-            doOvertake(clickedGridCell, nextNextCell);
-            return SDL_TRUE;
-        }
+    struct Cell *nextNextCell = g_cellboard + nextNextIndex;
+    if ( nextNextCell->occubant == NULL) {
+        doOvertake(clickedGridCell, nextNextCell);
+        return SDL_TRUE;
     }
 
     return SDL_FALSE;
@@ -158,26 +165,17 @@ SDL_bool tryToMove(int xOffset, int yOffset) {
     int xdiff = g_selected->columnIndex + xOffset;
     int nextIndex = ydiff * BOARD_LENGTH + xdiff;
 
-    if ( 0 <= nextIndex && nextIndex < BOARD_SIZE ) {
-        struct Cell *gridCell = g_cellboard + nextIndex;
+    if ( !isSelectedCellWithinBoundaries(xdiff, ydiff, nextIndex) )
+        return SDL_FALSE;
 
-        if (
-            xdiff < 0             ||
-            xdiff >= BOARD_LENGTH ||
-            ydiff < 0             ||
-            ydiff >= BOARD_LENGTH
-        ) {
-            // constraint against wrap around
-            return SDL_FALSE;
-        }
+    struct Cell *gridCell = g_cellboard + nextIndex;
 
-        if ( SDL_PointInRect(&g_mouse, gridCell->container) ) {
-            if ( gridCell->occubant == NULL ) {
-                doMoveToEmpty(gridCell);
-                return SDL_TRUE;
-            } else if ( gridCell->occubant->color != g_selected->occubant->color ) {
-                return tryToOvertake(gridCell, xOffset, yOffset);
-            }
+    if ( SDL_PointInRect(&g_mouse, gridCell->container) ) {
+        if ( gridCell->occubant == NULL ) {
+            doMoveToEmpty(gridCell);
+            return SDL_TRUE;
+        } else if ( gridCell->occubant->color != g_selected->occubant->color ) {
+            return tryToOvertake(gridCell, xOffset, yOffset);
         }
     }
 
@@ -372,6 +370,34 @@ void boardstate_update() {
     }
 }
 
+void renderCheckerTracers(int nextRow, int nextColumn, int next2Row, int next2Column) {
+    if (
+        IS_WITHIN_BOARD(nextRow) &&
+        IS_WITHIN_BOARD(nextColumn)
+    ) {
+        struct Cell *gridCell = g_cellboard + (nextRow * BOARD_LENGTH + nextColumn);
+
+        if (
+            gridCell->occubant == NULL
+        ) {
+            SDL_SetRenderDrawColor(g_renderer, 0x00, 0x7f, 0xff, 0xff);
+        } else if (
+            gridCell->occubant->color != g_selected->occubant->color &&
+            IS_WITHIN_BOARD(next2Row) && IS_WITHIN_BOARD(next2Column)
+        ) {
+            struct Cell *nextGridCell = g_cellboard + (next2Row * BOARD_LENGTH + next2Column);
+            if ( nextGridCell->occubant == NULL ) {
+                SDL_SetRenderDrawColor(g_renderer, 0x00, 0x7f, 0xff, 0xff);
+            } else {
+                SDL_SetRenderDrawColor(g_renderer, 0x54, 0x54,0x54, 0xff);
+            }
+        } else {
+            SDL_SetRenderDrawColor(g_renderer, 0x54, 0x54,0x54, 0xff);
+        }
+        SDL_RenderFillRect(g_renderer, gridCell->container);
+    }
+}
+
 void boardstate_render() {
     SDL_SetRenderDrawColor(g_renderer, PC_OPAQUE_WHITE);
     SDL_RenderClear(g_renderer);
@@ -381,49 +407,16 @@ void boardstate_render() {
         int nextColumn = g_selected->columnIndex + 1;
         int prevRow = g_selected->rowIndex - 1;
         int prevColumn = g_selected->columnIndex - 1;
-        if ( 0 < nextRow && nextRow < BOARD_LENGTH && 0 < nextColumn && nextColumn < BOARD_LENGTH ) {
-            struct Cell *gridCell = g_cellboard + (nextRow * BOARD_LENGTH + nextColumn);
-            if (gridCell->occubant == NULL ||
-                gridCell->occubant->color != g_selected->occubant->color) {
-                SDL_SetRenderDrawColor(g_renderer, 0x00, 0x7f, 0xff, 0xff);
-            } else {
-                SDL_SetRenderDrawColor(g_renderer, 0x54, 0x54,0x54, 0xff);
-            }
-            SDL_RenderFillRect(g_renderer, gridCell->container);
-        }
 
-        if ( 0 < nextRow && nextRow < BOARD_LENGTH && 0 < prevColumn && prevColumn < BOARD_LENGTH ) {
-            struct Cell *gridCell = g_cellboard + (nextRow * BOARD_LENGTH + prevColumn);
-            if (gridCell->occubant == NULL ||
-                gridCell->occubant->color != g_selected->occubant->color) {
-                SDL_SetRenderDrawColor(g_renderer, 0x00, 0x7f, 0xff, 0xff);
-            } else {
-                SDL_SetRenderDrawColor(g_renderer, 0x54, 0x54,0x54, 0xff);
-            }
-            SDL_RenderFillRect(g_renderer, gridCell->container);
-        }
+        int next2Row = g_selected->rowIndex + 2;
+        int next2Column = g_selected->columnIndex + 2;
+        int prev2Row = g_selected->rowIndex - 2;
+        int prev2Column = g_selected->columnIndex - 2;
 
-        if ( 0 < prevRow && prevRow < BOARD_LENGTH && 0 < nextColumn && nextColumn < BOARD_LENGTH ) {
-            struct Cell *gridCell = g_cellboard + (prevRow * BOARD_LENGTH + nextColumn);
-            if (gridCell->occubant == NULL ||
-                gridCell->occubant->color != g_selected->occubant->color) {
-                SDL_SetRenderDrawColor(g_renderer, 0x00, 0x7f, 0xff, 0xff);
-            } else {
-                SDL_SetRenderDrawColor(g_renderer, 0x54, 0x54,0x54, 0xff);
-            }
-            SDL_RenderFillRect(g_renderer, gridCell->container);
-        }
-
-        if ( 0 < prevRow && prevRow < BOARD_LENGTH && 0 < prevColumn && prevColumn < BOARD_LENGTH ) {
-            struct Cell *gridCell = g_cellboard + (prevRow * BOARD_LENGTH + prevColumn);
-            if (gridCell->occubant == NULL ||
-                gridCell->occubant->color != g_selected->occubant->color) {
-                SDL_SetRenderDrawColor(g_renderer, 0x00, 0x7f, 0xff, 0xff);
-            } else {
-                SDL_SetRenderDrawColor(g_renderer, 0x54, 0x54,0x54, 0xff);
-            }
-            SDL_RenderFillRect(g_renderer, gridCell->container);
-        }
+        renderCheckerTracers(nextRow, nextColumn, next2Row, next2Column);
+        renderCheckerTracers(nextRow, prevColumn, next2Row, prev2Column);
+        renderCheckerTracers(prevRow, nextColumn, prev2Row, next2Column);
+        renderCheckerTracers(prevRow, prevColumn, prev2Row, prev2Column);
     }
 
     SDL_SetRenderDrawColor(g_renderer, PC_OPAQUE_BLACK);
