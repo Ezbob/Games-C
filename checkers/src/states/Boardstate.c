@@ -6,8 +6,8 @@
 #include "Animation.h"
 
 
-#define IS_WITHIN_BOARD_AXIS(x) (0 <= x && x < BOARD_LENGTH)
-#define IS_IN_BOUNDS(xdiff, ydiff) (IS_WITHIN_BOARD_AXIS(xdiff) && IS_WITHIN_BOARD_AXIS(ydiff))
+#define IS_AXIS_WITHIN_BOARD(x) (0 <= x && x < BOARD_LENGTH)
+#define IS_IN_BOUNDS(x, y) ((0 <= x && x < BOARD_LENGTH) && (0 <= y && y < BOARD_LENGTH))
 #define BOARD_INDEX(x, y) (y * BOARD_LENGTH + x)
 
 extern SDL_Renderer *g_renderer;
@@ -357,20 +357,15 @@ void boardstate_update() {
 }
 
 void renderCheckerTracers(int nextRow, int nextColumn, int next2Row, int next2Column) {
-    if (
-        IS_IN_BOUNDS(nextRow, nextColumn)
-    ) {
+    if ( IS_IN_BOUNDS(nextRow, nextColumn) ) {
         struct Cell *gridCell = g_cellboard + BOARD_INDEX(nextColumn, nextRow);
 
-        if (
-            gridCell->occubant == NULL
-        ) {
+        if ( gridCell->occubant == NULL ) {
             SDL_SetRenderDrawColor(g_renderer, 0x00, 0x7f, 0xff, 0xff);
-        } else if (
-            gridCell->occubant->color != g_selected->occubant->color &&
-            IS_IN_BOUNDS(next2Row, next2Column)
-        ) {
+        } else if ( gridCell->occubant->color != g_selected->occubant->color
+                    && IS_IN_BOUNDS(next2Row, next2Column) ) {
             struct Cell *nextGridCell = g_cellboard + BOARD_INDEX(next2Column, next2Row);
+
             if ( nextGridCell->occubant == NULL ) {
                 SDL_SetRenderDrawColor(g_renderer, 0x00, 0x7f, 0xff, 0xff);
             } else {
