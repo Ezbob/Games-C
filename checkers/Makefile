@@ -30,6 +30,7 @@ clean:
 
 help:
 	@echo "Available targets:"
-	@echo "  - release: Builds release binaries in the '${BUILD_DIR_RELEASE}' directory"
-	@echo "  - debug: Builds debug binaries in the '${BUILD_DIR_DEBUG}' directory"
+	@echo "  - release: Builds release binary in the '${BUILD_DIR_RELEASE}' directory"
+	@echo "  - debug: Builds debug binary in the '${BUILD_DIR_DEBUG}' directory"
+	@echo "  - run: Builds debug binary in the '${BUILD_DIR_DEBUG}' directory and runs it"
 	@echo "  - clean: Removes the build directories"
