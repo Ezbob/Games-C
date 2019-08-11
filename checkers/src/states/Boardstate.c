@@ -5,7 +5,10 @@
 #include "Tweening.h"
 #include "Animation.h"
 
-#define IS_WITHIN_BOARD(x) (0 <= x && x < BOARD_LENGTH)
+
+#define IS_WITHIN_BOARD_AXIS(x) (0 <= x && x < BOARD_LENGTH)
+#define IS_IN_BOUNDS(xdiff, ydiff) (IS_WITHIN_BOARD_AXIS(xdiff) && IS_WITHIN_BOARD_AXIS(ydiff))
+#define BOARD_INDEX(x, y) (y * BOARD_LENGTH + x)
 
 extern SDL_Renderer *g_renderer;
 extern struct gt_Gamestate_Machine g_statemachine;
@@ -100,18 +103,6 @@ void switchTurn() {
     }
 }
 
-SDL_bool isSelectedCellWithinBoundaries(int xdiff, int ydiff, int nextIndex) {
-    if (
-        ( 0 > nextIndex || nextIndex >= BOARD_SIZE ) ||
-        ( g_selected == NULL ) ||
-        ( !IS_WITHIN_BOARD(xdiff) || !IS_WITHIN_BOARD(ydiff) )
-    ) {
-        return SDL_FALSE;
-    }
-
-    return SDL_TRUE;
-}
-
 void doMoveToEmpty(struct Cell *target) {
     struct Checker *source = g_selected->occubant;
 
@@ -145,13 +136,12 @@ void doOvertake(struct Cell *taken, struct Cell *target) {
 SDL_bool tryToOvertake(struct Cell *clickedGridCell, int xOffset, int yOffset) {
     int y2diff = g_selected->rowIndex + (yOffset * 2);
     int x2diff = g_selected->columnIndex + (xOffset * 2);
-    int nextNextIndex = y2diff * BOARD_LENGTH + x2diff;
 
-    if ( !isSelectedCellWithinBoundaries(x2diff, y2diff, nextNextIndex) ) {
+    if ( !IS_IN_BOUNDS(x2diff, y2diff) ) {
         return SDL_FALSE;
     }
 
-    struct Cell *nextNextCell = g_cellboard + nextNextIndex;
+    struct Cell *nextNextCell = g_cellboard + BOARD_INDEX(x2diff, y2diff);
     if ( nextNextCell->occubant == NULL) {
         doOvertake(clickedGridCell, nextNextCell);
         return SDL_TRUE;
@@ -163,12 +153,11 @@ SDL_bool tryToOvertake(struct Cell *clickedGridCell, int xOffset, int yOffset) {
 SDL_bool tryToMove(int xOffset, int yOffset) {
     int ydiff = g_selected->rowIndex + yOffset;
     int xdiff = g_selected->columnIndex + xOffset;
-    int nextIndex = ydiff * BOARD_LENGTH + xdiff;
 
-    if ( !isSelectedCellWithinBoundaries(xdiff, ydiff, nextIndex) )
+    if ( !IS_IN_BOUNDS(xdiff, ydiff) )
         return SDL_FALSE;
 
-    struct Cell *gridCell = g_cellboard + nextIndex;
+    struct Cell *gridCell = g_cellboard + BOARD_INDEX(xdiff, ydiff);
 
     if ( SDL_PointInRect(&g_mouse, gridCell->container) ) {
         if ( gridCell->occubant == NULL ) {
@@ -204,11 +193,7 @@ void initCheckerPosition(struct Checker *checker, SDL_Rect *rect,
     /* Next tweening position is
         initially the same as the
         start */
-    checker->next.x = rect->x;
-    checker->next.y = rect->y;
-    checker->next.w = rect->w;
-    checker->next.h = rect->h;
-
+    checker->next = *rect;
     checker->color = color;
     checker->rect = rect;
 
@@ -373,10 +358,9 @@ void boardstate_update() {
 
 void renderCheckerTracers(int nextRow, int nextColumn, int next2Row, int next2Column) {
     if (
-        IS_WITHIN_BOARD(nextRow) &&
-        IS_WITHIN_BOARD(nextColumn)
+        IS_IN_BOUNDS(nextRow, nextColumn)
     ) {
-        struct Cell *gridCell = g_cellboard + (nextRow * BOARD_LENGTH + nextColumn);
+        struct Cell *gridCell = g_cellboard + BOARD_INDEX(nextColumn, nextRow);
 
         if (
             gridCell->occubant == NULL
@@ -384,9 +368,9 @@ void renderCheckerTracers(int nextRow, int nextColumn, int next2Row, int next2Co
             SDL_SetRenderDrawColor(g_renderer, 0x00, 0x7f, 0xff, 0xff);
         } else if (
             gridCell->occubant->color != g_selected->occubant->color &&
-            IS_WITHIN_BOARD(next2Row) && IS_WITHIN_BOARD(next2Column)
+            IS_IN_BOUNDS(next2Row, next2Column)
         ) {
-            struct Cell *nextGridCell = g_cellboard + (next2Row * BOARD_LENGTH + next2Column);
+            struct Cell *nextGridCell = g_cellboard + BOARD_INDEX(next2Column, next2Row);
             if ( nextGridCell->occubant == NULL ) {
                 SDL_SetRenderDrawColor(g_renderer, 0x00, 0x7f, 0xff, 0xff);
             } else {
