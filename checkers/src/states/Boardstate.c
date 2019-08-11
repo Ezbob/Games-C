@@ -212,7 +212,8 @@ void initCheckerPosition(struct Checker *checker, SDL_Rect *rect,
     checker->color = color;
     checker->rect = rect;
 
-    gt_animation_init(&checker->anim, 1500, checkerAnimationUpdate, (void *) checker);
+    gt_animation_init(&checker->anim, 1500);
+    gt_animation_register_at_update(&checker->anim, checkerAnimationUpdate, (void *) checker);
 }
 
 /*
