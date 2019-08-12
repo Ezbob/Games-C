@@ -4,6 +4,7 @@
 #include "States.h"
 #include "Tweening.h"
 #include "Animation.h"
+#include "Constants.h"
 
 
 #define IS_AXIS_WITHIN_BOARD(x) (0 <= x && x < BOARD_LENGTH)
@@ -43,6 +44,13 @@ struct Cell {
 SDL_bool g_is_target_selected = SDL_FALSE;
 SDL_Rect g_board[BOARD_SIZE];
 SDL_Rect g_checker_rects[BOARD_SIZE];
+SDL_Rect g_black_tiles[BOARD_SIZE / 2];
+SDL_Rect g_frame = {
+    .x = 20,
+    .y = 20,
+    .w = SCREEN_WIDTH - 40,
+    .h = SCREEN_HEIGHT - 60
+};
 
 struct Score {
     int green_remaining;
@@ -236,6 +244,8 @@ void boardstate_handleKeyState(const Uint8 *states) {
 void boardstate_unload(void) {}
 
 SDL_bool boardstate_load() {
+    int f = 0;
+
     for (int i = 0; i < BOARD_LENGTH; ++i) {
         for (int j = 0; j < BOARD_LENGTH; ++j) {
 
@@ -252,6 +262,20 @@ SDL_bool boardstate_load() {
             cell->container = container;
             cell->columnIndex = j;
             cell->rowIndex = i;
+
+            if ( i % 2 == 1 && j % 2 == 0 ) {
+                SDL_Rect *c = g_board + flatIndex;
+                SDL_Rect *o = g_black_tiles + f;
+
+                *o = *c;
+                f++;
+            } else if ( i % 2 == 0 && j % 2 == 1 ) {
+                SDL_Rect *c = g_board + flatIndex;
+                SDL_Rect *o = g_black_tiles + f;
+
+                *o = *c;
+                f++;
+            }
 
             /** Checkers initialization **/
 
@@ -401,8 +425,11 @@ void boardstate_render() {
         renderCheckerTracers(prevRow, prevColumn, prev2Row, prev2Column);
     }
 
-    SDL_SetRenderDrawColor(g_renderer, PC_OPAQUE_BLACK);
-    SDL_RenderDrawRects(g_renderer, g_board, BOARD_LENGTH * BOARD_LENGTH);
+    SDL_SetRenderDrawColor(g_renderer, 0x30, 0x30, 0x30, 0xff);
+    SDL_RenderDrawRect(g_renderer, &g_frame);
+
+    SDL_SetRenderDrawColor(g_renderer, 0x30, 0x30, 0x30, 0xff);
+    SDL_RenderFillRects(g_renderer, g_black_tiles, BOARD_SIZE / 2);
 
     SDL_SetRenderDrawColor(g_renderer, PC_OPAQUE_GREEN);
     SDL_RenderFillRects(g_renderer, g_checker_rects, g_score.green_length);
