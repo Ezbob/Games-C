@@ -65,12 +65,18 @@ void printCell(const struct Cell * c) {
     printf("CELL(%p\t%p)\n", c->container, c->occubant);
 }
 
+void showSelectionBox() {
+    g_selectionBox.x = g_selected->container->x + 5;
+    g_selectionBox.y = g_selected->container->y + 5;
+
+    g_selectionBox.w = g_selected->container->w - 10;
+    g_selectionBox.h = g_selected->container->h - 10;
+}
+
 void findSelected() {
     for (int i = 0; i < BOARD_LENGTH; i++) {
         for (int j = 0; j < BOARD_LENGTH; ++j) {
-
-            int index = i * BOARD_LENGTH + j;
-            struct Cell *gridCell = g_cellboard + index;
+            struct Cell *gridCell = g_cellboard + BOARD_INDEX(j, i);
 
             if ( SDL_PointInRect(&g_mouse, gridCell->container)
                 && gridCell->occubant != NULL
@@ -78,12 +84,8 @@ void findSelected() {
                 && !SDL_RectEmpty(gridCell->occubant->rect)
             ) {
                 g_selected = gridCell;
-                g_selectionBox.x = g_selected->container->x + 5;
-                g_selectionBox.y = g_selected->container->y + 5;
 
-                g_selectionBox.w = g_selected->container->w - 10;
-                g_selectionBox.h = g_selected->container->h - 10;
-                return;
+                return showSelectionBox();
             }
         }
     }
