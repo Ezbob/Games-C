@@ -243,7 +243,7 @@ void boardstate_handleKeyState(const Uint8 *states) {
 void boardstate_unload(void) {}
 
 SDL_bool boardstate_load() {
-    int f = 0;
+    int checkerIndex = 0;
 
     for (int i = 0; i < BOARD_LENGTH; ++i) {
         for (int j = 0; j < BOARD_LENGTH; ++j) {
@@ -262,18 +262,16 @@ SDL_bool boardstate_load() {
             cell->columnIndex = j;
             cell->rowIndex = i;
 
-            if ( i % 2 == 1 && j % 2 == 0 ) {
-                SDL_Rect *c = g_board + flatIndex;
-                SDL_Rect *o = g_black_tiles + f;
+            /** Black tiles **/
+            if (
+                (i % 2 == 1 && j % 2 == 0) ||
+                (i % 2 == 0 && j % 2 == 1)
+            ) {
+                SDL_Rect *board_tile = g_board + flatIndex;
+                SDL_Rect *tile = g_black_tiles + checkerIndex;
 
-                *o = *c;
-                f++;
-            } else if ( i % 2 == 0 && j % 2 == 1 ) {
-                SDL_Rect *c = g_board + flatIndex;
-                SDL_Rect *o = g_black_tiles + f;
-
-                *o = *c;
-                f++;
+                *tile = *board_tile;
+                checkerIndex++;
             }
 
             /** Checkers initialization **/
