@@ -114,10 +114,11 @@ void switchTurn() {
 }
 
 void checkIfSuperChecker(struct Cell *target) {
-    target->occubant->isSuperChecker = (
-        (target->occubant->color == RED && target->rowIndex == 0) ||
-        (target->rowIndex == (BOARD_LENGTH - 1))
-    );
+    if ( !target->occubant->isSuperChecker )
+        target->occubant->isSuperChecker = (
+            (target->occubant->color == RED && target->rowIndex == 0) ||
+            (target->rowIndex == (BOARD_LENGTH - 1))
+        );
 }
 
 void doMoveToEmpty(struct Cell *target) {
@@ -193,10 +194,24 @@ SDL_bool tryToMove(int xOffset, int yOffset) {
 }
 
 void updateSelected() {
-    if ( tryToMove( 1,  1) ) return;
-    if ( tryToMove(-1,  1) ) return;
-    if ( tryToMove( 1, -1) ) return;
-    if ( tryToMove(-1, -1) ) return;
+    switch (g_selected->occubant->isSuperChecker) {
+        case SDL_TRUE: {
+            for (int i = 1; i < BOARD_LENGTH; ++i) {
+                if ( tryToMove( i,  i) ) return;
+                if ( tryToMove(-i,  i) ) return;
+                if ( tryToMove( i, -i) ) return;
+                if ( tryToMove(-i, -i) ) return;
+            }
+            break;
+        }
+        case SDL_FALSE: {
+            if ( tryToMove( 1,  1) ) return;
+            if ( tryToMove(-1,  1) ) return;
+            if ( tryToMove( 1, -1) ) return;
+            if ( tryToMove(-1, -1) ) return;
+            break;
+        }
+    }
 }
 
 void checkerAnimationUpdate(double remaining, void *data) {
@@ -419,20 +434,44 @@ void boardstate_render() {
     SDL_RenderClear(g_renderer);
 
     if ( g_selected != NULL ) {
-        int nextRow = g_selected->rowIndex + 1;
-        int nextColumn = g_selected->columnIndex + 1;
-        int prevRow = g_selected->rowIndex - 1;
-        int prevColumn = g_selected->columnIndex - 1;
+        switch (g_selected->occubant->isSuperChecker) {
+            case SDL_TRUE: {
+                for (int i = 1; i < BOARD_LENGTH; ++i) {
+                    int nextRow = g_selected->rowIndex + i;
+                    int nextColumn = g_selected->columnIndex + i;
+                    int prevRow = g_selected->rowIndex - i;
+                    int prevColumn = g_selected->columnIndex - i;
 
-        int next2Row = g_selected->rowIndex + 2;
-        int next2Column = g_selected->columnIndex + 2;
-        int prev2Row = g_selected->rowIndex - 2;
-        int prev2Column = g_selected->columnIndex - 2;
+                    int next2Row = g_selected->rowIndex + (i * 2);
+                    int next2Column = g_selected->columnIndex + (i * 2);
+                    int prev2Row = g_selected->rowIndex - (i * 2);
+                    int prev2Column = g_selected->columnIndex - (i * 2);
 
-        renderCheckerTracers(nextRow, nextColumn, next2Row, next2Column);
-        renderCheckerTracers(nextRow, prevColumn, next2Row, prev2Column);
-        renderCheckerTracers(prevRow, nextColumn, prev2Row, next2Column);
-        renderCheckerTracers(prevRow, prevColumn, prev2Row, prev2Column);
+                    renderCheckerTracers(nextRow, nextColumn, next2Row, next2Column);
+                    renderCheckerTracers(nextRow, prevColumn, next2Row, prev2Column);
+                    renderCheckerTracers(prevRow, nextColumn, prev2Row, next2Column);
+                    renderCheckerTracers(prevRow, prevColumn, prev2Row, prev2Column);
+                }
+                break;
+            }
+            case SDL_FALSE: {
+                int nextRow = g_selected->rowIndex + 1;
+                int nextColumn = g_selected->columnIndex + 1;
+                int prevRow = g_selected->rowIndex - 1;
+                int prevColumn = g_selected->columnIndex - 1;
+
+                int next2Row = g_selected->rowIndex + 2;
+                int next2Column = g_selected->columnIndex + 2;
+                int prev2Row = g_selected->rowIndex - 2;
+                int prev2Column = g_selected->columnIndex - 2;
+
+                renderCheckerTracers(nextRow, nextColumn, next2Row, next2Column);
+                renderCheckerTracers(nextRow, prevColumn, next2Row, prev2Column);
+                renderCheckerTracers(prevRow, nextColumn, prev2Row, next2Column);
+                renderCheckerTracers(prevRow, prevColumn, prev2Row, prev2Column);
+                break;
+            }
+        }
     }
 
     SDL_SetRenderDrawColor(g_renderer, 0x30, 0x30, 0x30, 0xff);
