@@ -27,6 +27,7 @@ static const int checkerLength = 60;
 static const int containerLength = 100;
 
 struct Checker {
+    SDL_bool isSuperChecker;
     enum PlayingColor color;
     struct gt_animation anim;
     SDL_Rect *rect; // the actual rendered rect
@@ -112,6 +113,13 @@ void switchTurn() {
     }
 }
 
+void checkIfSuperChecker(struct Cell *target) {
+    target->occubant->isSuperChecker = (
+        (target->occubant->color == RED && target->rowIndex == 0) ||
+        (target->rowIndex == (BOARD_LENGTH - 1))
+    );
+}
+
 void doMoveToEmpty(struct Cell *target) {
     struct Checker *source = g_selected->occubant;
 
@@ -121,6 +129,8 @@ void doMoveToEmpty(struct Cell *target) {
 
     target->occubant = source;
     g_selected->occubant = NULL;
+
+    checkIfSuperChecker(target);
 }
 
 void doOvertake(struct Cell *taken, struct Cell *target) {
@@ -140,6 +150,8 @@ void doOvertake(struct Cell *taken, struct Cell *target) {
     memset(taken->occubant->rect, 0, sizeof(SDL_Rect));
 
     taken->occubant = NULL;
+
+    checkIfSuperChecker(target);
 }
 
 SDL_bool tryToOvertake(struct Cell *clickedGridCell, int xOffset, int yOffset) {
@@ -205,6 +217,7 @@ void initCheckerPosition(struct Checker *checker, SDL_Rect *rect,
     checker->next = *rect;
     checker->color = color;
     checker->rect = rect;
+    checker->isSuperChecker = SDL_FALSE;
 
     gt_animation_init(&checker->anim, 1500);
     gt_animation_register_at_update(&checker->anim, checkerAnimationUpdate, (void *) checker);
