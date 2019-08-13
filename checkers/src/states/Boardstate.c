@@ -6,7 +6,6 @@
 #include "Animation.h"
 #include "Constants.h"
 
-
 #define IS_AXIS_WITHIN_BOARD(x) (0 <= x && x < BOARD_LENGTH)
 #define IS_IN_BOUNDS(x, y) ((0 <= x && x < BOARD_LENGTH) && (0 <= y && y < BOARD_LENGTH))
 #define BOARD_INDEX(x, y) (y * BOARD_LENGTH + x)
@@ -19,13 +18,13 @@ enum board_consts {
     BOARD_SIZE = (BOARD_LENGTH * BOARD_LENGTH)
 };
 
-static const int checkerLength = 60;
-static const int containerLength = 100;
-
 enum PlayingColor {
     GREEN,
     RED
 };
+
+static const int checkerLength = 60;
+static const int containerLength = 100;
 
 struct Checker {
     enum PlayingColor color;
@@ -33,6 +32,13 @@ struct Checker {
     SDL_Rect *rect; // the actual rendered rect
     SDL_Rect next; // the next point in the lerp
 };
+
+struct Score {
+    int green_remaining;
+    int red_remaining;
+    int green_length;
+    int red_length;
+} g_score;
 
 struct Cell {
     SDL_Rect *container;
@@ -51,13 +57,6 @@ SDL_Rect g_frame = {
     .w = SCREEN_WIDTH - 40,
     .h = SCREEN_HEIGHT - 60
 };
-
-struct Score {
-    int green_remaining;
-    int red_remaining;
-    int green_length;
-    int red_length;
-} g_score;
 
 /* There can be max BOARD_SIZE checkers in play */
 struct Checker g_checkers[BOARD_SIZE];
