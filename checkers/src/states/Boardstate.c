@@ -48,7 +48,6 @@ struct Cell {
     int rowIndex;
 };
 
-SDL_bool g_is_target_selected = SDL_FALSE;
 SDL_Rect g_board[BOARD_SIZE];
 SDL_Rect g_checker_rects[BOARD_SIZE];
 SDL_Rect g_black_tiles[BOARD_SIZE / 2];
@@ -64,13 +63,14 @@ struct Checker g_checkers[BOARD_SIZE];
 struct Cell g_cellboard[BOARD_SIZE];
 
 struct Cell *g_selected = NULL;
+struct Cell *g_target_selected = NULL;
 SDL_Point g_mouse;
 SDL_Rect g_selectionBox;
 
 enum PlayingColor g_playingColor = GREEN;
 
 void printCell(const struct Cell * c) {
-    printf("CELL(%p\t%p)\n", c->container, c->occubant);
+    printf("CELL(x: %i, y: %i, cont: %p, occ: %p)\n", c->columnIndex, c->rowIndex, c->container, c->occubant );
 }
 
 void showSelectionBox() {
@@ -95,6 +95,19 @@ void findSelected() {
 
                 return showSelectionBox();
             }
+        }
+    }
+}
+
+void findSelectedTarget() {
+    for (int i = 0; i < BOARD_LENGTH; i++) {
+        for (int j = 0; j < BOARD_LENGTH; ++j) {
+            struct Cell *gridCell = g_cellboard + BOARD_INDEX(j, i);
+
+            if ( SDL_PointInRect(&g_mouse, gridCell->container) ) {
+                g_target_selected = gridCell;
+                return;
+           }
         }
     }
 }
@@ -156,8 +169,8 @@ void doOvertake(struct Cell *taken, struct Cell *target) {
 }
 
 SDL_bool tryToOvertake(struct Cell *clickedGridCell, int xOffset, int yOffset) {
-    int y2diff = g_selected->rowIndex + (yOffset * 2);
-    int x2diff = g_selected->columnIndex + (xOffset * 2);
+    int y2diff = clickedGridCell->rowIndex + yOffset;
+    int x2diff = clickedGridCell->columnIndex + xOffset;
 
     if ( !IS_IN_BOUNDS(x2diff, y2diff) ) {
         return SDL_FALSE;
@@ -193,15 +206,177 @@ SDL_bool tryToMove(int xOffset, int yOffset) {
     return SDL_FALSE;
 }
 
+int findFirstInLine(int xincr, int yincr) {
+    int xLimit = xincr > 0 ? BOARD_LENGTH : 0;
+    int yLimit = yincr > 0 ? BOARD_LENGTH : 0;
+
+    if ( xincr > 0 && yincr > 0 ) {
+        for (
+            int x = g_selected->columnIndex + xincr, y = g_selected->rowIndex + yincr;
+            x < xLimit && y < yLimit;
+            x += xincr, y += yincr
+        ) {
+            struct Cell *c = g_cellboard + BOARD_INDEX(x, y);
+            if (
+                (c->occubant != NULL && !SDL_RectEmpty(c->occubant->rect))
+            ) {
+                return BOARD_INDEX(x, y);
+            }
+        }
+
+    } else if ( xincr > 0 && yincr < 0 ) {
+        for (
+            int x = g_selected->columnIndex + xincr, y = g_selected->rowIndex + yincr;
+            x < xLimit && y >= yLimit;
+            x += xincr, y += yincr
+        ) {
+            struct Cell *c = g_cellboard + BOARD_INDEX(x, y);
+            if (
+                (c->occubant != NULL && !SDL_RectEmpty(c->occubant->rect))
+            ) {
+                return BOARD_INDEX(x, y);
+            }
+        }
+    } else if ( xincr < 0 && yincr > 0 ) {
+        for (
+            int x = g_selected->columnIndex + xincr, y = g_selected->rowIndex + yincr;
+            x >= xLimit && y < yLimit;
+            x += xincr, y += yincr
+        ) {
+            struct Cell *c = g_cellboard + BOARD_INDEX(x, y);
+            if (
+                (c->occubant != NULL && !SDL_RectEmpty(c->occubant->rect))
+            ) {
+                return BOARD_INDEX(x, y);
+            }
+        }
+    } else {
+        for (
+            int x = g_selected->columnIndex + xincr, y = g_selected->rowIndex + yincr;
+            x >= xLimit && y >= yLimit;
+            x += xincr, y += yincr
+        ) {
+            struct Cell *c = g_cellboard + BOARD_INDEX(x, y);
+            if (
+                (c->occubant != NULL && !SDL_RectEmpty(c->occubant->rect))
+            ) {
+                return BOARD_INDEX(x, y);
+            }
+        }
+    }
+    return -1;
+}
+
+SDL_bool isOnLine(int xincr, int yincr) {
+    int xLimit = xincr > 0 ? BOARD_LENGTH : 0;
+    int yLimit = yincr > 0 ? BOARD_LENGTH : 0;
+
+    if ( xincr > 0 && yincr > 0 ) {
+        for (
+            int x = g_selected->columnIndex + xincr, y = g_selected->rowIndex + yincr;
+            x < xLimit && y < yLimit;
+            x += xincr, y += yincr
+        ) {
+            struct Cell *c = g_cellboard + BOARD_INDEX(x, y);
+            if ( c == g_target_selected ) {
+                return SDL_TRUE;
+            }
+        }
+    } else if ( xincr > 0 && yincr < 0 ) {
+        for (
+            int x = g_selected->columnIndex + xincr, y = g_selected->rowIndex + yincr;
+            x < xLimit && y >= yLimit;
+            x += xincr, y += yincr
+        ) {
+            struct Cell *c = g_cellboard + BOARD_INDEX(x, y);
+            if ( c == g_target_selected ) {
+                return SDL_TRUE;
+            }
+        }
+    } else if ( xincr < 0 && yincr > 0 ) {
+        for (
+            int x = g_selected->columnIndex + xincr, y = g_selected->rowIndex + yincr;
+            x >= xLimit && y < yLimit;
+            x += xincr, y += yincr
+        ) {
+            struct Cell *c = g_cellboard + BOARD_INDEX(x, y);
+            if ( c == g_target_selected ) {
+                return SDL_TRUE;
+            }
+        }
+    } else {
+        for (
+            int x = g_selected->columnIndex + xincr, y = g_selected->rowIndex + yincr;
+            x >= xLimit && y >= yLimit;
+            x += xincr, y += yincr
+        ) {
+            struct Cell *c = g_cellboard + BOARD_INDEX(x, y);
+            if ( c == g_target_selected ) {
+                return SDL_TRUE;
+            }
+        }
+    }
+
+    return SDL_FALSE;
+}
+
+void tryToMoveInLine() {
+    int targetIndex = BOARD_INDEX(g_target_selected->columnIndex, g_target_selected->rowIndex);
+    if ( isOnLine(1, -1) ) {
+        int NEObstructed = findFirstInLine(1, -1);
+
+        if ( targetIndex > NEObstructed || NEObstructed == -1 )
+            doMoveToEmpty(g_target_selected);
+        else if (
+            targetIndex == NEObstructed
+            && g_target_selected->occubant->color != g_playingColor
+        ) {
+            tryToOvertake(g_target_selected, 1, -1);
+        }
+
+    } else if ( isOnLine(-1, -1) ) {
+        int NWObstructed = findFirstInLine(-1, -1);
+
+        if ( targetIndex > NWObstructed || NWObstructed == -1 )
+            doMoveToEmpty(g_target_selected);
+        else if (
+            targetIndex == NWObstructed
+            && g_target_selected->occubant->color != g_playingColor
+        ) {
+            tryToOvertake(g_target_selected, -1, -1);
+        }
+
+    } else if ( isOnLine(-1, 1) ) {
+        int SWObstructed = findFirstInLine(-1, 1);
+
+        if ( targetIndex < SWObstructed || SWObstructed == -1 )
+            doMoveToEmpty(g_target_selected);
+        else if (
+            targetIndex == SWObstructed
+            && g_target_selected->occubant->color != g_playingColor
+        ) {
+            tryToOvertake(g_target_selected, -1, 1);
+        }
+
+    } else if ( isOnLine(1, 1) ) {
+        int SEObstructed = findFirstInLine(1, 1);
+
+        if ( targetIndex < SEObstructed || SEObstructed == -1 )
+            doMoveToEmpty(g_target_selected);
+        else if (
+            targetIndex == SEObstructed
+            && g_target_selected->occubant->color != g_playingColor
+        ) {
+            tryToOvertake( g_target_selected, 1, 1);
+        }
+
+    }
+}
+
 void updateSelected() {
     switch (g_selected->occubant->isSuperChecker) {
         case SDL_TRUE: {
-            for (int i = 1; i < BOARD_LENGTH; ++i) {
-                if ( tryToMove( i,  i) ) return;
-                if ( tryToMove(-i,  i) ) return;
-                if ( tryToMove( i, -i) ) return;
-                if ( tryToMove(-i, -i) ) return;
-            }
+            tryToMoveInLine();
             break;
         }
         case SDL_FALSE: {
@@ -253,7 +428,7 @@ void boardstate_handleEvent(const SDL_Event *event) {
                 if (g_selected == NULL) {
                     findSelected();
                 } else {
-                    g_is_target_selected = SDL_TRUE;
+                    findSelectedTarget();
                 }
             }
             break;
@@ -393,12 +568,12 @@ void boardstate_update() {
         return;
     }
 
-    if ( g_selected != NULL && g_is_target_selected == SDL_TRUE ) {
+    if ( g_selected != NULL && g_target_selected != NULL ) {
         updateSelected();
 
         memset(&g_selectionBox, 0, sizeof(g_selectionBox));
         g_selected = NULL;
-        g_is_target_selected = SDL_FALSE;
+        g_target_selected = NULL;
     }
 
     for ( int i = 0; i < (g_score.green_length + g_score.red_length); i++ ) {
@@ -407,8 +582,9 @@ void boardstate_update() {
     }
 }
 
-void renderCheckerTracers(int nextRow, int nextColumn, int next2Row, int next2Column) {
-    if ( IS_IN_BOUNDS(nextRow, nextColumn) ) {
+SDL_bool renderCheckerTracers(int nextRow, int nextColumn, int next2Row, int next2Column) {
+    SDL_bool obstructed = SDL_FALSE;
+    if ( IS_IN_BOUNDS(nextColumn, nextRow) ) {
         struct Cell *gridCell = g_cellboard + BOARD_INDEX(nextColumn, nextRow);
 
         if ( gridCell->occubant == NULL ) {
@@ -419,14 +595,19 @@ void renderCheckerTracers(int nextRow, int nextColumn, int next2Row, int next2Co
 
             if ( nextGridCell->occubant == NULL ) {
                 SDL_SetRenderDrawColor(g_renderer, 0x00, 0x7f, 0xff, 0xff);
+                obstructed = SDL_TRUE;
             } else {
                 SDL_SetRenderDrawColor(g_renderer, 0x54, 0x54,0x54, 0xff);
+                obstructed = SDL_TRUE;
             }
         } else {
             SDL_SetRenderDrawColor(g_renderer, 0x54, 0x54,0x54, 0xff);
+            obstructed = SDL_TRUE;
         }
         SDL_RenderFillRect(g_renderer, gridCell->container);
     }
+
+    return obstructed;
 }
 
 void boardstate_render() {
@@ -436,6 +617,7 @@ void boardstate_render() {
     if ( g_selected != NULL ) {
         switch (g_selected->occubant->isSuperChecker) {
             case SDL_TRUE: {
+                int obstructed[4] = {0};
                 for (int i = 1; i < BOARD_LENGTH; ++i) {
                     int nextRow = g_selected->rowIndex + i;
                     int nextColumn = g_selected->columnIndex + i;
@@ -447,10 +629,14 @@ void boardstate_render() {
                     int prev2Row = g_selected->rowIndex - (i * 2);
                     int prev2Column = g_selected->columnIndex - (i * 2);
 
-                    renderCheckerTracers(nextRow, nextColumn, next2Row, next2Column);
-                    renderCheckerTracers(nextRow, prevColumn, next2Row, prev2Column);
-                    renderCheckerTracers(prevRow, nextColumn, prev2Row, next2Column);
-                    renderCheckerTracers(prevRow, prevColumn, prev2Row, prev2Column);
+                    if ( !obstructed[0] )
+                        obstructed[0] = renderCheckerTracers(nextRow, nextColumn, next2Row, next2Column);
+                    if ( !obstructed[1] )
+                        obstructed[1] = renderCheckerTracers(nextRow, prevColumn, next2Row, prev2Column);
+                    if ( !obstructed[2] )
+                        obstructed[2] = renderCheckerTracers(prevRow, nextColumn, prev2Row, next2Column);
+                    if ( !obstructed[3] )
+                        obstructed[3] = renderCheckerTracers(prevRow, prevColumn, prev2Row, prev2Column);
                 }
                 break;
             }
