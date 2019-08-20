@@ -624,10 +624,10 @@ void boardstate_render() {
                     int prevRow = g_selected->rowIndex - i;
                     int prevColumn = g_selected->columnIndex - i;
 
-                    int next2Row = g_selected->rowIndex + (i * 2);
-                    int next2Column = g_selected->columnIndex + (i * 2);
-                    int prev2Row = g_selected->rowIndex - (i * 2);
-                    int prev2Column = g_selected->columnIndex - (i * 2);
+                    int next2Row = nextRow + 1;
+                    int next2Column = nextColumn + 1;
+                    int prev2Row = prevRow - 1;
+                    int prev2Column = prevColumn - 1;
 
                     if ( !obstructed[0] )
                         obstructed[0] = renderCheckerTracers(nextRow, nextColumn, next2Row, next2Column);
