@@ -6,7 +6,6 @@
 #include "Animation.h"
 #include "Constants.h"
 
-#define IS_AXIS_WITHIN_BOARD(x) (0 <= x && x < BOARD_LENGTH)
 #define IS_IN_BOUNDS(x, y) ((0 <= x && x < BOARD_LENGTH) && (0 <= y && y < BOARD_LENGTH))
 #define BOARD_INDEX(x, y) (y * BOARD_LENGTH + x)
 
@@ -451,7 +450,7 @@ SDL_bool boardstate_load() {
     for (int i = 0; i < BOARD_LENGTH; ++i) {
         for (int j = 0; j < BOARD_LENGTH; ++j) {
 
-            int flatIndex = (i * BOARD_LENGTH + j);
+            int flatIndex = BOARD_INDEX(j, i);
 
             SDL_Rect *container = g_board + flatIndex;
             struct Cell *cell = g_cellboard + flatIndex;
