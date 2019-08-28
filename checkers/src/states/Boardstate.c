@@ -465,10 +465,7 @@ SDL_bool boardstate_load() {
             cell->rowIndex = i;
 
             /** Black tiles **/
-            if (
-                (i % 2 == 1 && j % 2 == 0) ||
-                (i % 2 == 0 && j % 2 == 1)
-            ) {
+            if ( i % 2 != j % 2 ) {
                 SDL_Rect *board_tile = g_board + flatIndex;
                 SDL_Rect *tile = g_black_tiles + checkerIndex;
 
@@ -477,79 +474,36 @@ SDL_bool boardstate_load() {
             }
 
             /** Checkers initialization **/
+            if ( i % 2 == j % 2 && i < (BOARD_LENGTH / 2) - 1 ) {
+                /** GREEN **/
+                struct Checker *checker = g_checkers + (g_score.green_length);
+                SDL_Rect *rect = g_checker_rects + (g_score.green_length++);
 
-            /** GREEN **/
-            if ( i % 2 == 0 && i < (BOARD_LENGTH / 2) ) {
-                if (j % 2 == 0) {
-                    struct Checker *checker = g_checkers + (g_score.green_length);
-                    SDL_Rect *rect = g_checker_rects + (g_score.green_length++);
+                initCheckerPosition(checker, rect,
+                    (containerLength * (j % BOARD_LENGTH)) + 40,
+                    (container->y + 20),
+                    checkerLength,
+                    checkerLength,
+                    GREEN
+                );
 
-                    initCheckerPosition(checker, rect,
-                        (containerLength * (j % BOARD_LENGTH)) + 40,
-                        (container->y + 20),
-                        checkerLength,
-                        checkerLength,
-                        GREEN
-                    );
+                cell->occubant = checker;
+            } else if ( i % 2 == j % 2 && i > (BOARD_LENGTH / 2) ) {
+                /** RED **/
+                int currentIndex = (g_score.green_length + g_score.red_length);
+                struct Checker *checker = g_checkers + currentIndex;
+                SDL_Rect *rect = g_checker_rects + currentIndex;
+                g_score.red_length++;
 
-                    cell->occubant = checker;
-                    continue;
-                }
-            } else if ( i % 2 != 0 && i < (BOARD_LENGTH / 2) - 1 ) {
-                if (j % 2 != 0) {
-                    struct Checker *checker = g_checkers + (g_score.green_length);
-                    SDL_Rect *rect = g_checker_rects + (g_score.green_length++);
+                initCheckerPosition(checker, rect,
+                    containerLength * (j % BOARD_LENGTH) + 40,
+                    container->y + 20,
+                    checkerLength,
+                    checkerLength,
+                    RED
+                );
 
-                    initCheckerPosition(checker, rect,
-                        containerLength * (j % BOARD_LENGTH) + 40,
-                        container->y + 20,
-                        checkerLength,
-                        checkerLength,
-                        GREEN
-                    );
-
-                    cell->occubant = checker;
-                    continue;
-                }
-            }
-
-            /** RED **/
-            if ( i % 2 == 0 && i > (BOARD_LENGTH / 2) ) {
-                if (j % 2 == 0) {
-                    int currentIndex = (g_score.green_length + g_score.red_length);
-                    struct Checker *checker = g_checkers + currentIndex;
-                    SDL_Rect *rect = g_checker_rects + currentIndex;
-                    g_score.red_length++;
-
-                    initCheckerPosition(checker, rect,
-                        containerLength * (j % BOARD_LENGTH) + 40,
-                        container->y + 20,
-                        checkerLength,
-                        checkerLength,
-                        RED
-                    );
-
-                    cell->occubant = checker;
-                    continue;
-                }
-            } else if ( i % 2 != 0 && i > (BOARD_LENGTH / 2) ) {
-                if (j % 2 != 0) {
-                    int currentIndex =  (g_score.green_length + g_score.red_length);
-                    struct Checker *checker = g_checkers + currentIndex;
-                    SDL_Rect *rect = g_checker_rects + currentIndex;
-                    g_score.red_length++;
-
-                    initCheckerPosition(checker, rect,
-                        containerLength * (j % BOARD_LENGTH) + 40,
-                        container->y + 20,
-                        checkerLength,
-                        checkerLength,
-                        RED
-                    );
-
-                    cell->occubant = checker;
-                    continue;
-                }
+                cell->occubant = checker;
             }
         }
     }
